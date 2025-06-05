@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -25,23 +27,35 @@ public class Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        switch (GameManager.Instance.gameMode)
-        {
-            case GameManager.GameMode.Flappy:
-                //pass
-                break;
-        }
     }
     private void Click()
     {
-        switch (GameManager.Instance.gameMode)
+        switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
                 rb.AddForce(new Vector3(0, jumpForce, 0), ForceMode2D.Impulse);
                 break;
         }
     }
-
+    public void Restart()
+    {
+        StartCoroutine(RestartCoroutine());
+    }
+    private IEnumerator RestartCoroutine()
+    {
+        while(Time.timeScale > 0)
+        {
+            Time.timeScale = Mathf.Max(Time.timeScale - 1f * Time.fixedUnscaledDeltaTime, 0);
+            yield return new WaitForSecondsRealtime(1f/60f);
+        }
+        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.transform.tag == "Wall") {
+            Restart();
+        }
+    }
     private void Pause()
     {
         Debug.Log("Pause action performed!");
