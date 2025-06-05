@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
                     if (sinceWallSpawn > 1f)
                     {
                         sinceWallSpawn = Random.Range(-1f, 0f);
-                        flappyWallSpawner.Spawn(wallSpeed, false, opening);
+                        flappyWallSpawner.Spawn(wallSpeed, false, opening * Random.Range(0.7f, 1.3f));
                     }
                     break;
             }

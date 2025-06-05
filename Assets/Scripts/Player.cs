@@ -9,6 +9,10 @@ public class Player : MonoBehaviour
     private InputActions.NormalActions normalActions;
     private Rigidbody2D rb;
     private GameManager game;
+    public SpriteRenderer loseScreenshot;
+    public Transform loseScreenshotParent;
+    public AudioSource loseScreenshotSound;
+    public AudioSource music;
     [Header("Tweakables")]
     public float jumpForce = 1.0f;
     public float gravity = 1.0f;
@@ -27,6 +31,7 @@ public class Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
+
     }
     private void Click()
     {
@@ -43,16 +48,28 @@ public class Player : MonoBehaviour
     }
     private IEnumerator RestartCoroutine()
     {
-        while(Time.timeScale > 0)
+        while (Time.timeScale > 0)
         {
             Time.timeScale = Mathf.Max(Time.timeScale - 1f * Time.fixedUnscaledDeltaTime, 0);
-            yield return new WaitForSecondsRealtime(1f/60f);
+            music.pitch = Time.timeScale;
+            yield return new WaitForSecondsRealtime(1f / 60f);
         }
+        loseScreenshotSound.Play();
+        yield return new WaitForEndOfFrame();
+        Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();
+        loseScreenshotParent.gameObject.SetActive(true);
+        if (screenshot != null)
+        {
+            Sprite sprite = Sprite.Create(screenshot, new Rect(0, 0, screenshot.width, screenshot.height), new Vector2(0.5f, 0.5f));
+            loseScreenshot.sprite = sprite;
+        }
+        yield return new WaitForSecondsRealtime(5f);
         SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.transform.tag == "Wall") {
+        if (collision.transform.tag == "Wall")
+        {
             Restart();
         }
     }

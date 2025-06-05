@@ -9,7 +9,7 @@ public class FlappyWall : MonoBehaviour
         Down.GetComponent<Rigidbody2D>().linearVelocity = new Vector3(speed, 0, 0);
         Up.transform.position += new Vector3(0, opening, 0);
         Down.transform.position += new Vector3(0, -opening, 0);
-        transform.position += new Vector3(0, Random.Range(-opening, opening), 0);
+        transform.position += new Vector3(0, Random.Range(-opening, opening) * Random.Range(1f, 1.5f), 0);
     }
     private void Start()
     {
