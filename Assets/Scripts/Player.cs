@@ -21,9 +21,13 @@ public class Player : MonoBehaviour
     [Header("Tweakables")]
     public float jumpForce = 1.0f;
     public float gravity = 1.0f;
+    public float moveSpeed = 1.0f;
+    public int direction = 0;
     private int score = 0;
     public bool initialStop = true;
-    private float initialG;
+    public float coolDown = 1f;
+    public float initialG;
+    public float reflectionPercentage = 0;
 
     private void Awake()
     {
@@ -47,23 +51,70 @@ public class Player : MonoBehaviour
             score += (int)Mathf.Max((float)(GameManager.Score - score)/10f, 1);
         }
         ScoreTextMain.text = $"Score: {score}";
+        if (coolDown > 0) {
+            coolDown -= Time.fixedUnscaledDeltaTime;
+        }
+        
+        switch (direction)
+        {
+            case 1:
+                rb.AddForce(new Vector3(0, moveSpeed, 0), ForceMode2D.Force);
+                break;
+            case 2:
+                rb.AddForce(new Vector3(moveSpeed, 0, 0), ForceMode2D.Force);
+                break;
+            case 3:
+                rb.AddForce(new Vector3(0, -moveSpeed, 0), ForceMode2D.Force);
+                break;
+            case 4:
+                rb.AddForce(new Vector3(-moveSpeed, 0, 0), ForceMode2D.Force);
+                break;
+        }
     }
     private void Click()
     {
+        if (coolDown > 0) return;
+        game.hintVisible = false;
         if (initialStop)
         {
-            rb.gravityScale = initialG;
+            if (game.gameMode == GameManager.GameMode.Flappy)
+            {
+                rb.gravityScale = initialG;
+            }
             game.StartGame();
             initialStop = false;
         }
         AudioSource.PlayClipAtPoint(jump, transform.position);
-        GameManager.Instance.AddScore(5, "Flap");
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
                 rb.AddForce(new Vector3(0, jumpForce, 0), ForceMode2D.Impulse);
+                GameManager.Instance.AddScore(5, "Flap");
+                break;
+            case GameManager.GameMode.Clockwise:
+                GameManager.Instance.AddScore(1, "Flip");
+                SwitchDirection();
+                if (reflectionPercentage < 0.9f)
+                {
+                    reflectionPercentage += 0.05f;
+                }
+                else
+                {
+                    reflectionPercentage = 0.9f;
+                }
                 break;
         }
+    }
+    private void SwitchDirection()
+    {
+        if (direction == 0)
+        {
+            direction = 1;
+        }
+        direction += 1;
+        if(direction == 5) { direction = 1; }
+        Vector2 v = rb.linearVelocity * reflectionPercentage;
+        rb.linearVelocity = new Vector2(v.y, -v.x);
     }
     public void Restart()
     {
@@ -104,6 +155,18 @@ public class Player : MonoBehaviour
         {
             Restart();
         }
+        if (collision.transform.tag == "Blob")
+        {
+            GameManager.Instance.AddScore(100, "Blob");
+            collision.transform.gameObject.GetComponent<Blob>().Collect();
+        }
+    }
+    public void ResetPosition() {
+        StartCoroutine(resetPosition());
+    }
+    private IEnumerator resetPosition()
+    {
+        yield return null;
     }
     private void Pause()
     {
