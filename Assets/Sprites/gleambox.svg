@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="gleambox.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.368204"
+     inkscape:cx="-351.19032"
+     inkscape:cy="659.9893"
+     inkscape:window-width="1366"
+     inkscape:window-height="697"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter2354"
+       x="-1.2"
+       y="-1.2"
+       width="3.4"
+       height="3.4">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="20.837145"
+         id="feGaussianBlur2356" />
+    </filter>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#020017;fill-opacity:1;stroke-width:1.41796;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect234"
+       width="114.00866"
+       height="114.00866"
+       x="-134.03577"
+       y="111.25971"
+       inkscape:export-filename="gleambox.png"
+       inkscape:export-xdpi="114.06852"
+       inkscape:export-ydpi="114.06852" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke;filter:url(#filter2354)"
+       id="rect2352"
+       width="41.67429"
+       height="41.67429"
+       x="-95.823456"
+       y="143.85085" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect950"
+       width="41.67429"
+       height="41.67429"
+       x="-95.823456"
+       y="143.85085" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0.80000001;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect2377"
+       width="41.67429"
+       height="41.67429"
+       x="-96.88179"
+       y="144.90916" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0.60000002;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect2379"
+       width="41.67429"
+       height="41.67429"
+       x="-97.940125"
+       y="145.96748" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0.40000001;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect2433"
+       width="41.67429"
+       height="41.67429"
+       x="-98.998459"
+       y="147.0258" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0.2;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect2435"
+       width="41.67429"
+       height="41.67429"
+       x="-100.05679"
+       y="148.08412" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0.1;stroke-width:1.79276;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.4;stroke-dashoffset:49.1339;stroke-opacity:0.234649;paint-order:markers fill stroke"
+       id="rect2437"
+       width="41.67429"
+       height="41.67429"
+       x="-101.11513"
+       y="149.14244" />
+  </g>
+</svg>
