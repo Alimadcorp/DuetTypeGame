@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,8 +12,12 @@ public class GameManager : MonoBehaviour
 	private float sinceGameModeChange = 0f;
 	private float sinceWallSpawn = 0f;
 	public float time = 0f;
+	[Range(0f, 10f)]
 	public static int Score = 0;
-	public int switchThreshold = 1000;
+    public float Speed = 0.25f;
+    public float TargetSpeed = 0.25f;
+    public int switchThreshold = 1000;
+	public float rateOfIncrease;
 
 	[Header("Parameters")]
 	public float wallSpeed, opening, speedFactor = 1.0f, multiplier = 1.0f, multiplierUpSpeed = 1f;
@@ -19,21 +25,27 @@ public class GameManager : MonoBehaviour
 	[Header("Object References")]
 	public GameObject bigDaddy, ScoreFade;
 	public Transform scoreFadeSource;
+	public GameObject askUsername;
 	public FlappyWallSpawner flappyWallSpawner;
 	public TextMeshPro multiText;
-	public AudioClip moreScore;
-	public GameObject switchText;
+    public AudioClip moreScore;
+    public AudioSource music;
+    public GameObject switchText;
     public TextMeshPro hintText;
     public TextMeshPro titleText;
     public GameObject blob;
 
-	private int blobAmt = 0;
+	public int blobAmt = 0;
     public bool hintVisible = true;
     public bool titleVisible = true;
-    private bool isSpawning = false;
 	public bool Paused = true;
 	private int scoreSinceChange = 0;
-	public float xs, ys;
+	public int powerMultiplier = 1;
+	public float speedMultiplier = 1f;
+    public float xs, ys;
+	public bool over = false;
+	public float alpha = 1;
+	public Image[] imgs;
 
 	private void Awake()
 	{
@@ -51,13 +63,49 @@ public class GameManager : MonoBehaviour
 	{
 		SetGamemode(gameMode);
 	}
-
-	void FixedUpdate()
+	public void AddPowerup(string name)
+	{
+		if (name == "2x")
+		{
+			Powerups.instance.AddPowerup(name, 12f);
+			powerMultiplier *= 2;
+		} else if (name == "4x")
+		{
+            Powerups.instance.AddPowerup(name, 8f);
+            powerMultiplier *= 4;
+        } else if(name == "slow")
+		{
+            Powerups.instance.AddPowerup("Slow Mo", 10f);
+			speedMultiplier = 0.4f;
+        }
+	}
+    public void RemovePowerup(string name)
+    {
+        if (name == "2x")
+        {
+            powerMultiplier /= 2;
+        }
+        else if (name == "4x")
+        {
+            powerMultiplier /= 4;
+        }
+        else if (name == "Slow Mo")
+        {
+            speedMultiplier = 1;
+        }
+    }
+    void FixedUpdate()
 	{
 		UpdateHintVisibility();
-
 		if (!Paused)
 		{
+			if (!over)
+            {
+                Time.timeScale = Mathf.Sqrt(speedMultiplier);
+                TargetSpeed += Time.fixedDeltaTime * rateOfIncrease;
+				Speed = Mathf.Lerp(Speed, TargetSpeed * speedMultiplier, 0.2f);
+				music.pitch = Mathf.Lerp(music.pitch, speedMultiplier, 0.2f);
+			}
 			UpdateMultiplier();
 			UpdateTimers();
 			HandleWallSpawning();
@@ -68,6 +116,21 @@ public class GameManager : MonoBehaviour
     {
         hintText.color = new Color(1, 1, 1, Mathf.Lerp(hintText.color.a, hintVisible ? 1f : 0f, 0.05f));
         titleText.color = new Color(1, 1, 1, Mathf.Lerp(titleText.color.a, titleVisible ? 1f : 0f, 0.05f));
+		if (alpha > 0.01f)
+		{
+			alpha = Mathf.Lerp(alpha, titleVisible ? 1f : 0f, 0.05f);
+			for (int i = 0; i < imgs.Length; i++)
+			{
+				imgs[i].color = new Color(imgs[i].color.r, imgs[i].color.g, imgs[i].color.b, alpha);
+			}
+		}
+		else
+		{
+            for (int i = 0; i < imgs.Length; i++)
+            {
+				imgs[i].gameObject.GetComponent<Button>().interactable = false;
+            }
+        }
     }
 
 	private void UpdateMultiplier()
@@ -106,7 +169,12 @@ public class GameManager : MonoBehaviour
 		}
 		if ((gameMode == GameMode.AntiClockwise || gameMode == GameMode.Clockwise) && blobAmt < 2)
 		{
-			Instantiate(blob, RandomTransform(), Quaternion.identity, bigDaddy.transform);
+			Blob newBlob = Instantiate(blob, RandomTransform(), Quaternion.identity, bigDaddy.transform).GetComponent<Blob>();
+			if((int)Random.Range(0, 15) == 2)
+			{
+				string random = Blob.intToId((int)Random.Range(0, 3));
+				newBlob.MakePowerup(random);
+			}
 			blobAmt++;
 		}
 	}
@@ -141,8 +209,7 @@ public class GameManager : MonoBehaviour
 				tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.down * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
 				tmp.text = "Round\nMode";
 				hintVisible = true;
-				isSpawning = true;
-				Player.Instance.reflectionPercentage = 0;
+				Player.Instance.reflectionPercentage = 0f;
 				hintText.text = "Tap rapidly to switch directions";
 				break;
 			case GameMode.AntiClockwise:
@@ -151,8 +218,7 @@ public class GameManager : MonoBehaviour
 				tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.down * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
 				tmp.text = "Round\nMode\n(Anti Clockwise)";
 				hintVisible = true;
-				isSpawning = true;
-				Player.Instance.reflectionPercentage = 0;
+				Player.Instance.reflectionPercentage = 0f;
 				hintText.text = "Tap to switch directions";
 				break;
 			case GameMode.Flappy:
@@ -164,7 +230,6 @@ public class GameManager : MonoBehaviour
 				tmp.text = "Flappy\nMode";
 				hintText.text = "Tap to jump";
 				hintVisible = true;
-				Invoke("StartSpawning", 2f);
 				Blob[] blobs = bigDaddy.GetComponentsInChildren<Blob>();
 				foreach (var blob in blobs)
 				{
@@ -190,9 +255,9 @@ public class GameManager : MonoBehaviour
 	{
 		if (source == "Blob") blobAmt--;
 		titleVisible = false;
-		int scoreToAdd = (int)(amt * multiplier);
+		int scoreToAdd = (int)(amt * multiplier * powerMultiplier);
 		Score += scoreToAdd;
-		scoreSinceChange += scoreToAdd;
+		scoreSinceChange += (int)(amt * multiplier);
 
 		if (amt > 5)
 		{
@@ -202,12 +267,13 @@ public class GameManager : MonoBehaviour
 
 		if (amt >= 100 && moreScore != null)
 		{
-			AudioSource.PlayClipAtPoint(moreScore, transform.position);
+			AudioSource.PlayClipAtPoint(moreScore, transform.position, 0.2f);
 		}
 
 		if (scoreSinceChange > switchThreshold * multiplier)
-		{
-			NextGameMode();
+        {
+			scoreSinceChange = 0;
+            Invoke("NextGameMode", 6f);
 		}
 	}
 
@@ -215,10 +281,5 @@ public class GameManager : MonoBehaviour
 	{
 		Paused = false;
 		Player.Instance.rb.gravityScale = gameMode == GameMode.Flappy ? Player.Instance.initialG : 0;
-	}
-
-	private void StartSpawning()
-	{
-		isSpawning = true;
 	}
 }

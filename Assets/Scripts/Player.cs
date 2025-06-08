@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using TMPro;
@@ -17,11 +18,14 @@ public class Player : MonoBehaviour
     public AudioSource loseScreenshotSound;
     public AudioSource music;
     public TextMeshPro ScoreText;
+    public TextMeshPro HighScoreText;
     public TextMeshPro ScoreTextMain;
     public AudioClip jump;
+    public LeaderboardManager ldMan;
     [Header("Tweakables")]
     public float jumpForce = 1.0f;
     public float gravity = 1.0f;
+    public bool ClickEnabled = false;
     public float moveSpeed = 1.0f;
     public int direction = 0;
     private int score = 0;
@@ -29,6 +33,7 @@ public class Player : MonoBehaviour
     public float coolDown = 1f;
     public float initialG;
     public float reflectionPercentage = 0;
+    public bool ContinueMode = false;
 
     private void Awake()
     {
@@ -41,9 +46,15 @@ public class Player : MonoBehaviour
         normalActions.Pause.performed += ctx => Pause();
         Instance = this;
     }
+    public void BeginGame()
+    {
+        ClickEnabled = true;
+        Click();
+    }
     private void Start()
     {
         game = GameManager.Instance;
+        game.over = false;
     }
     private void FixedUpdate()
     {
@@ -61,34 +72,36 @@ public class Player : MonoBehaviour
             switch (direction)
             {
                 case 1:
-                    rb.AddForce(new Vector3(0, -moveSpeed, 0), ForceMode2D.Force);
+                    rb.AddForce(new Vector3(0, -moveSpeed * game.Speed, 0), ForceMode2D.Force);
                     break;
                 case 2:
-                    rb.AddForce(new Vector3(-moveSpeed, 0, 0), ForceMode2D.Force);
+                    rb.AddForce(new Vector3(-moveSpeed * game.Speed, 0, 0), ForceMode2D.Force);
                     break;
                 case 3:
-                    rb.AddForce(new Vector3(0, moveSpeed, 0), ForceMode2D.Force);
+                    rb.AddForce(new Vector3(0, moveSpeed * game.Speed, 0), ForceMode2D.Force);
                     break;
                 case 4:
-                    rb.AddForce(new Vector3(moveSpeed, 0, 0), ForceMode2D.Force);
+                    rb.AddForce(new Vector3(moveSpeed * game.Speed, 0, 0), ForceMode2D.Force);
                     break;
             }
         }
     }
     private void Click()
     {
+        if (ContinueMode) { OnContinue(); ContinueMode = false; };
+        if (!ClickEnabled) return;
         if (coolDown > 0) return;
         game.hintVisible = false;
         if (initialStop)
         {
-            if (game.gameMode == GameManager.GameMode.Flappy)
-            {
-                rb.gravityScale = initialG;
-            }
             game.StartGame();
             initialStop = false;
         }
-        AudioSource.PlayClipAtPoint(jump, transform.position);
+        if (game.gameMode == GameManager.GameMode.Flappy)
+        {
+            rb.gravityScale = initialG;
+        }
+       // AudioSource.PlayClipAtPoint(jump, transform.position);
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
@@ -98,14 +111,6 @@ public class Player : MonoBehaviour
             case GameManager.GameMode.Clockwise:
                 GameManager.Instance.AddScore(1, "Flip");
                 SwitchDirection();
-                if (reflectionPercentage < 0.9f)
-                {
-                    reflectionPercentage += 0.05f;
-                }
-                else
-                {
-                    reflectionPercentage = 0.9f;
-                }
                 break;
             case GameManager.GameMode.AntiClockwise:
                 GameManager.Instance.AddScore(1, "Flip");
@@ -143,10 +148,20 @@ public class Player : MonoBehaviour
     }
     public void Restart()
     {
+        game.over = true;
         StartCoroutine(RestartCoroutine());
     }
+    bool submitt = false;
     private IEnumerator RestartCoroutine()
     {
+        int HighScore = PlayerPrefs.GetInt("highScore");
+        if (GameManager.Score > HighScore)
+        {
+            HighScore = GameManager.Score;
+            PlayerPrefs.SetInt("highScore", HighScore);
+            PlayerPrefs.Save();
+            submitt = true;
+        }
         while (Time.timeScale > 0)
         {
             Time.timeScale = Mathf.Max(Time.timeScale - 1f * Time.fixedUnscaledDeltaTime, 0);
@@ -156,6 +171,7 @@ public class Player : MonoBehaviour
         yield return new WaitForEndOfFrame();
 
         Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();
+        Sprite sprite = null;
         if (screenshot != null)
         {
             float baseWidth = 720f;
@@ -163,17 +179,18 @@ public class Player : MonoBehaviour
             float scaleFactor = Mathf.Sqrt((screenshot.width * screenshot.height) / (baseWidth * baseHeight));
             float baseDPI = 100f;
 
-            Sprite sprite = Sprite.Create(
+            sprite = Sprite.Create(
                 screenshot,
                 new Rect(0, 0, screenshot.width, screenshot.height),
                 new Vector2(0.5f, 0.5f),
                 baseDPI * scaleFactor
             );
-
-            loseScreenshot.sprite = sprite;
         }
-        yield return new WaitForSecondsRealtime(0.01f);
+        yield return new WaitForSecondsRealtime(0.1f);
+        ContinueMode = true;
         loseScreenshotParent.gameObject.SetActive(true);
+        HighScoreText.text = $"High Score: {HighScore}";
+        loseScreenshot.sprite = sprite;
         loseScreenshotSound.Play();
         yield return new WaitForSecondsRealtime(1f);
         float t = 0;
@@ -184,19 +201,43 @@ public class Player : MonoBehaviour
             yield return new WaitForSecondsRealtime(1f / 60f);
         }
         ScoreText.text = $"Score: {GameManager.Score}";
-        yield return new WaitForSecondsRealtime(1f);
-        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void OnContinue()
+    {
+        if (submitt)
+        {
+            ldMan.OpenLeaderboard(true);
+            ldMan.SubmitEntry(GameManager.Score);
+            submitt = false;
+        }
+        else
+        {
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.transform.tag == "Wall")
         {
+            game.over = true;
             Restart();
         }
         if (collision.transform.tag == "Blob")
         {
             GameManager.Instance.AddScore(100, "Blob");
             collision.transform.gameObject.GetComponent<Blob>().Collect();
+            if (reflectionPercentage < 0.9f)
+            {
+                reflectionPercentage += 0.1f;
+            }
+            else
+            {
+                reflectionPercentage = 0.9f;
+            }
+            if (collision.transform.gameObject.GetComponent<Blob>().id != "")
+            {
+                game.AddPowerup(collision.transform.gameObject.GetComponent<Blob>().id);
+            }
         }
     }
     public void ResetPosition()
@@ -218,7 +259,6 @@ public class Player : MonoBehaviour
     }
     private void Pause()
     {
-        Debug.Log("Pause action performed!");
     }
     private void OnEnable()
     {

@@ -7,7 +7,7 @@ public class BigDaddy : MonoBehaviour
     {
         if(moveDirection.sqrMagnitude > 0)
         {
-            transform.position += moveDirection * Time.fixedDeltaTime;
+            transform.position += moveDirection * Time.fixedDeltaTime * GameManager.Instance.Speed * GameManager.Instance.speedMultiplier;
         }
     }
 }
