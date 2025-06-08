@@ -1,0 +1,9 @@
+{
+    "builds": [
+        {
+            "version": "v1",
+            "name": "Version 1",
+            "address": "C:/Users/acer/Desktop/Zolitude 2.0"
+        }
+    ]
+}

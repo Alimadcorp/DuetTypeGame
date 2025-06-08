@@ -48,6 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Up: {fileID: 5613931931585986821}
   Down: {fileID: 4540126601983026857}
+  os: 0
+  osa: 20
 --- !u!1 &4540126601983026857
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,3 @@
+In case there is an error saying that access to folder is not denied while installing,
+you will have to manually copy all folders in WebBuildTools/Templates folder to
+UNITY_INSTALL_PATH + "Data/PlaybackEngines/WebGLSupport/BuildTools/WebGLTemplates/"

@@ -5,14 +5,24 @@ using UnityEngine;
 public class AspectRatioUtility : MonoBehaviour
 {
     public float targetaspect = 9.0f / 16.0f;
+    public float lwa = 9.0f / 16.0f;
     void Start()
     {
         Adjust();
+        InvokeRepeating("Check", 0.25f, 0.5f);
+    }
+    public void Check()
+    {
+        float windowaspect = (float)Screen.width / (float)Screen.height;
+        if(windowaspect != lwa)
+        {
+            Adjust();
+        }
     }
     public void Adjust()
     {
         float windowaspect = (float)Screen.width / (float)Screen.height;
-
+        lwa = windowaspect;
         float scaleheight = windowaspect / targetaspect;
 
         Camera camera = GetComponent<Camera>();

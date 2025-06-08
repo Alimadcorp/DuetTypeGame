@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to use Web Build Tools</title>
+  </head>
+  <body>
+    <h2>Unity Web Build Tools</h2>
+    <br />
+    <h1>Auto Install</h1>
+    <ul>
+    <strong>Install</strong>
+    <li>Just go to Window > Alimad Co > Web Build Tools</li>
+    <li>Click Install</li>
+    <li>Then select MadWeb Template in Project Settings > Player > Resolution and Presentation</li>
+    <br>
+    <strong>Multi Build Export</strong>
+    <li>If you have exported more than 1 builds, add builds in the window and select the location of the folder of each</li>
+    <li>Click export</li>
+    </ul>
+    <h3>Video Tutorial</h3>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/Wr8rXc35Y0Y" title="Auto Install" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <br><br>
+    <h1>Custom Install</h1>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/vv8LwzHYqEw" title="Custom Install" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <br><br>
+    <h2 id="howtoinstall">How to install MadWeb Template</h2>
+    <p></p>
+    <details>
+      <summary><strong>Step 1: Copy the "MadWeb Template" folder into .../Unity Hub\Editor\YourUnityVersion\Editor\Data\PlaybackEngines\WebGLSupport\BuildTools\WebGLTemplates</strong></summary>
+      <div class="content">
+        <p>
+          Copy the "MadWeb Template" folder present in the download.<br>
+          <a href="https://docs.unity3d.com/2018.2/Documentation/Manual/GettingStartedInstallingHub.html#:~:text=of%20the%20Hub.-,Click%20the%20Installs%20tab.,and%20select%20the%20Unity%20executable.">Locate your unity editor install location.</a><br>
+          Open "Editor\YourUnityVersion\Editor\Data\PlaybackEngines\WebGLSupport\BuildTools\WebGLTemplates" folder.<br>
+          Paste the "MadWeb Template" folder there.<br>
+        </p>
+        <img src="Screenshots/location.png" alt="Paste folder" />
+      </div>
+    </details><br>
+    <details>
+      <summary><strong>Step 2: Select MadWeb Template in Project Settings > Player > Resolution and Presentation</strong></summary>
+      <div class="content">
+        <p>
+          <a href="https://docs.unity3d.com/Manual/web-templates-intro.html">View detailed info here.</a><br>
+        </p>
+        <img src="Screenshots/respreswindow.png" alt="Select template" />
+      </div>
+    </details><br>
+    <details>
+      <summary><strong>Step 3: Export a Web Build</strong></summary>
+      <div class="content">
+        <p>
+          Do you really need a summary for this??<br>
+        </p>
+        <img src="Screenshots/view.png" alt="Preview" />
+      </div>
+    </details><br>
+    <details>
+      <summary><strong>Customization</strong></summary>
+      <div class="content">
+        <p>
+          <strong>You can change the font by replacing TemplateData/font.ttf</strong><br>
+          Make sure to replace with the same name
+        </p><br>
+        <p>
+          <strong>You can change loading subitles by editing TemplateData/subtitles.txt</strong><br>
+          Format: <br>50%:Half Done<br>
+          70%: More than half Done<br>
+          etc...
+        </p>
+        <img src="Screenshots/subs (2).png" alt="Edit subtitles" />
+        <img src="Screenshots/subs (1).png" alt="Edit subtitles" />
+      </div>
+    </details>
+
+    <br><br><br>
+    <h2>--------------------------</h2>
+    <h2>Multi Web Builds</h2>
+    <details>
+      <summary><strong>Step 1: Make a copy of "Multi Web Build" folder and rename it to whatever you want. </strong></summary>
+      <div class="content">
+        <p>
+          Copy it somewhere ouside of this downloads folder
+        </p>
+        <img src="Screenshots/copyoffolder.png" alt="Copy the folder" />
+      </div>
+    </details><br>
+    <details>
+      <summary><strong>Step 2: Paste the contents of your first web build into the "v1" folder, second web build into "v2" folder and so on.</summary>
+      <div class="content">
+        <p>
+          Make sure that index.html is directly accessible in those folders
+        </p>
+        <img src="Screenshots/paste (1).png" alt="Paste version 1" />
+        <img src="Screenshots/paste (2).png" alt="Paste version 2" />
+      </div>
+    </details><br>
+    <details>
+      <summary><strong>Step 3: Zip the Multi Web Build folder you renamed and upload to itch.io</summary>
+    </details><br>
+    <details>
+      <summary><strong>If you have more than 2 builds, or want to name the builds, edit index.html</summary>
+      <div class="content">
+        <p>
+          Open "Multi Web Build" or the renamed folder and edit the index.html directly inside it.
+          Add new versions using <br>"&lt;a href="#" onclick="loadVersion('vn')">Version N&lt;/a&gt;"
+        </p>
+        <img src="Screenshots/change.png" alt="Change version names" />
+      </div>
+    </details><br>
+    <br /><br /><br>
+    <h2>--------------------------</h2>
+    <h4>
+      <a href="https://github.com/Alimadcorp/webbuildtools"
+        >Web Build Tools Github Page</a
+      >
+    </h4>
+    <h4>
+      <a href="https://alimadcorp.github.io/site/social.html">More Links</a>
+    </h4>
+    <h3>Release 1.0</h3>
+    <h3>Made by Muhammad Ali</h3>
+
+    <!--Styling-->
+    <style>
+      body {
+        padding: 20px;
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 24px;
+      }
+      details{
+        cursor: pointer;
+      }
+      img{
+        max-width: 40%;
+        max-height: 40%;
+      }
+    </style>
+  </body>
+</html>

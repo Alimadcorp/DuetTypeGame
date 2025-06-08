@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./v1/TemplateData/favicon.png">
+    <title>Game Ver. Selection Panel</title>
+</head>
+<body>
+	<center>
+		<div id="des">
+			<br><br><br><br>
+			<h3>Which version would you like to play?</h3><br><br><br>
+			<!--HTML Injection Point-->
+			
+			
+		</div>
+	</center>
+	<script type="text/javascript">
+        function loadVersion(version) {
+            let url = version + "/index.html"; 
+			document.getElementById('gameFrame').src = url;
+			document.getElementById("des").innerHTML = "";
+		}
+    </script>
+	<style>
+		@font-face {
+			font-family: 'DefaultFont';
+			src: url('font.ttf') format('truetype');
+		
+		}
+		* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+			font-family: "DefaultFont", serif;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+			background-color: black;
+			color: white;
+			  position: relative;
+			  overflow: hidden;
+			  background: radial-gradient(circle at center, #202040, #101020);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        a {
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #007acc;
+            position: relative;
+        }
+        a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #007acc, #00d4ff, #007acc);
+            background-size: 200%;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        a:hover::after {
+            transform: scaleX(1);
+            background-position: 100%;
+        }
+		#des{
+		  margin: 0;
+		  position: absolute;
+		  top: 50%;
+		  left: 50%;
+		  -ms-transform: translate(-50%, -50%);
+		  transform: translate(-50%, -60%);
+		}
+    </style>
+    <iframe id="gameFrame"></iframe>
+</body>
+</html>

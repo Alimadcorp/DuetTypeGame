@@ -273,10 +273,20 @@ public class GameManager : MonoBehaviour
 		if (scoreSinceChange > switchThreshold * multiplier)
         {
 			scoreSinceChange = 0;
-            Invoke("NextGameMode", 6f);
+			if (gameMode == GameMode.Flappy)
+			{
+				DestroyAllPipes();
+			}
+			NextGameMode();
 		}
 	}
-
+	void DestroyAllPipes()
+	{
+		foreach(FlappyWall wall in bigDaddy.GetComponentsInChildren<FlappyWall>())
+		{
+			wall.Blow();
+		}
+	}
 	public void StartGame()
 	{
 		Paused = false;

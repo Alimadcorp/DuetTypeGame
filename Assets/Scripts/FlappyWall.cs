@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class FlappyWall : MonoBehaviour
@@ -5,6 +6,21 @@ public class FlappyWall : MonoBehaviour
     public GameObject Up, Down;
     private bool chk = false;
     private float spd = 1;
+    public float os = 0, osa = 0.01f;
+    public void Blow()
+    {
+        StartCoroutine(blow());
+    }
+    private IEnumerator blow()
+    {
+        while (true)
+        {
+            Up.transform.position += new Vector3(0, os * Time.fixedDeltaTime, 0);
+            Down.transform.position += new Vector3(0, -os * Time.fixedDeltaTime, 0);
+            os += Time.unscaledDeltaTime * osa;
+            yield return null;
+        }
+    }
     public void Setup(float speed, float opening)
     {
         spd = speed;

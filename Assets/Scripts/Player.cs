@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
     public TextMeshPro ScoreTextMain;
     public AudioClip jump;
     public LeaderboardManager ldMan;
+    public GameObject credObj;
     [Header("Tweakables")]
     public float jumpForce = 1.0f;
     public float gravity = 1.0f;
@@ -105,7 +106,8 @@ public class Player : MonoBehaviour
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
-                rb.AddForce(new Vector3(0, jumpForce, 0), ForceMode2D.Impulse);
+                rb.linearVelocity = new Vector2(0, jumpForce);
+                rb.AddForce(new Vector3(0, jumpForce / 2, 0), ForceMode2D.Impulse);
                 GameManager.Instance.AddScore(5, "Flap");
                 break;
             case GameManager.GameMode.Clockwise:

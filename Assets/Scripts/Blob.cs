@@ -9,6 +9,7 @@ public class Blob : MonoBehaviour
     public Color[] colorsForPowerups = new Color[3];
     public TextMeshPro view;
     public GameObject blot;
+    public bool Blowing = false;
     public void MakePowerup(string _id)
     {
         id = _id;
@@ -56,13 +57,20 @@ public class Blob : MonoBehaviour
             yield return null;
         }
         GetComponent<Collider2D>().enabled = true;
+        if (Blowing) { 
+            StopAllCoroutines();
+            StartCoroutine(Despawn());
+        }
     }
     public void Collect()
     {
+        if (gameObject == null) return;
+        Blowing = true;
         StartCoroutine(collect());
     }
     public void despawn()
     {
+        Blowing = true;
         StartCoroutine(Despawn());
     }
     private IEnumerator Despawn()

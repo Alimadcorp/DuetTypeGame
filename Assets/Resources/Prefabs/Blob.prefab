@@ -340,7 +340,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.2, y: 1.2}
   m_EdgeRadius: 0
 --- !u!114 &2873771051259522486
 MonoBehaviour:
@@ -361,6 +361,7 @@ MonoBehaviour:
   - {r: 0, g: 0.54588175, b: 1, a: 1}
   view: {fileID: 6281478389120068851}
   blot: {fileID: 4006287163463110801}
+  Blowing: 0
 --- !u!1 &4006287163463110801
 GameObject:
   m_ObjectHideFlags: 0

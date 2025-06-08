@@ -1,0 +1,2 @@
+Make sure that WebBuildTools is directly inside the assets folder
+If this does not work, reinstall WebBuildTools
