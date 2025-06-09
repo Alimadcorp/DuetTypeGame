@@ -35,6 +35,7 @@ public class Player : MonoBehaviour
     public float initialG;
     public float reflectionPercentage = 0;
     public bool ContinueMode = false;
+    private bool gameOvered = false;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -89,7 +90,8 @@ public class Player : MonoBehaviour
     private void Click()
     {
         if (Time.timeSinceLevelLoad < 1) return;
-        if (ContinueMode) { OnContinue(); ContinueMode = false; };
+        if (ContinueMode) { OnContinue(); ContinueMode = false; }
+        ;
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
         game.hintVisible = false;
@@ -102,7 +104,7 @@ public class Player : MonoBehaviour
         {
             rb.gravityScale = initialG;
         }
-       // AudioSource.PlayClipAtPoint(jump, transform.position);
+        // AudioSource.PlayClipAtPoint(jump, transform.position);
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
@@ -150,7 +152,9 @@ public class Player : MonoBehaviour
     }
     public void Restart()
     {
+        if (gameOvered) return;
         game.over = true;
+        gameOvered = true;
         StartCoroutine(RestartCoroutine());
     }
     bool submitt = false;
