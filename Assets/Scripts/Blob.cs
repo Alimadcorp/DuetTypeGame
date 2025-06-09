@@ -10,112 +10,153 @@ public class Blob : MonoBehaviour
     public TextMeshPro view;
     public GameObject blot;
     public bool Blowing = false;
+
+    private bool _destroyed = false;
+
     public void MakePowerup(string _id)
     {
         id = _id;
-        blot.GetComponent<SpriteRenderer>().color = colorsForPowerups[idToInt(id)];
-        GetComponent<SpriteRenderer>().color = colorsForPowerups[idToInt(id)];
-        GetComponentInChildren<Light2D>().color = colorsForPowerups[idToInt(id)];
-        view.color = colorsForPowerups[idToInt(id)];
+        int index = idToInt(id);
+        Color c = colorsForPowerups[index];
+
+        SafeSetColor(blot?.GetComponent<SpriteRenderer>(), c);
+        SafeSetColor(GetComponent<SpriteRenderer>(), c);
+        SafeSetColor(GetComponentInChildren<Light2D>(), c);
+        if (view != null) view.color = c;
     }
-    public static int idToInt(string _id)
+
+    public static int idToInt(string _id) => _id switch
     {
-        switch (_id)
-        {
-            case "2x": return 0;
-            case "4x": return 1;
-            case "slow": return 2;
-            default: return 0;
-        }
-    }
-    public static string intToId(int n)
+        "2x" => 0,
+        "4x" => 1,
+        "slow" => 2,
+        _ => 0
+    };
+
+    public static string intToId(int n) => n switch
     {
-        switch (n)
-        {
-            case 0: return "2x";
-            case 1: return "4x";
-            case 2: return "slow";
-            default: return "";
-        }
-    }
+        0 => "2x",
+        1 => "4x",
+        2 => "slow",
+        _ => ""
+    };
+
     private void Start()
     {
         StartCoroutine(spawn());
-        Invoke("despawn", 15f);
+        Invoke(nameof(despawn), 15f);
     }
+
     private IEnumerator spawn()
     {
+        var light = GetComponentInChildren<Light2D>();
         while (transform.localScale.x < 2)
         {
             transform.localScale += Vector3.one * Time.unscaledDeltaTime * 5f;
-            GetComponentInChildren<Light2D>().intensity = Mathf.Lerp(GetComponentInChildren<Light2D>().intensity, 0.05f, 0.5f);
+            if (light != null)
+                light.intensity = Mathf.Lerp(light.intensity, 0.05f, 0.5f);
             if (transform.localScale.x >= 2)
             {
                 transform.localScale = Vector3.one * 2;
-                GetComponentInChildren<Light2D>().intensity = 0.05f;
+                if (light != null) light.intensity = 0.05f;
             }
             yield return null;
         }
-        GetComponent<Collider2D>().enabled = true;
-        if (Blowing) { 
+        var col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = true;
+
+        if (Blowing)
+        {
             StopAllCoroutines();
             StartCoroutine(Despawn());
         }
     }
+
     public void Collect()
     {
-        if (gameObject == null) return;
+        if (_destroyed || gameObject == null) return;
         Blowing = true;
-        StartCoroutine(collect());
+        try
+        {
+            StartCoroutine(collect());
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+            HardDestroy();
+        }
     }
+
     public void despawn()
     {
+        if (_destroyed) return;
         Blowing = true;
         StartCoroutine(Despawn());
     }
+
     private IEnumerator Despawn()
     {
+        var col = GetComponent<Collider2D>();
+        var light = GetComponentInChildren<Light2D>();
         while (transform.localScale.x > 0)
         {
-            GetComponent<Collider2D>().enabled = false;
+            if (col != null) col.enabled = false;
             transform.localScale -= Vector3.one * Time.unscaledDeltaTime * 3f;
-            GetComponentInChildren<Light2D>().intensity /= 1.08f;
-            if (transform.localScale.x <= 0)
-            {
-                transform.localScale = Vector3.zero;
-            }
+            if (light != null) light.intensity /= 1.08f;
             yield return null;
         }
+        transform.localScale = Vector3.zero;
         GameManager.Instance.blobAmt--;
-        Destroy(gameObject);
+        HardDestroy();
     }
+
     private IEnumerator collect()
     {
         CancelInvoke();
         StopCoroutine(spawn());
-        blot.transform.SetParent(null, true);
+
+        if (blot != null) blot.transform.SetParent(null, true);
         if (blot != null) blot.transform.localScale = Vector3.one * 2;
+
+        var col = GetComponent<Collider2D>();
+        var light = GetComponentInChildren<Light2D>();
+
         while (transform.localScale.x > 0)
         {
-            GetComponent<Collider2D>().enabled = false;
+            if (col != null) col.enabled = false;
             transform.localScale -= Vector3.one * Time.unscaledDeltaTime * 3f;
-            GetComponentInChildren<Light2D>().intensity /= 1.08f;
+            if (light != null) light.intensity /= 1.08f;
+
             if (blot != null)
             {
                 blot.transform.localScale += Vector3.one * Time.unscaledDeltaTime * 3f;
-                blot.GetComponent<SpriteRenderer>().color -= new Color(0, 0, 0, Time.unscaledDeltaTime * 3f);
-                if (blot.GetComponent<SpriteRenderer>().color.a < 0)
+                var sr = blot.GetComponent<SpriteRenderer>();
+                if (sr != null)
                 {
-                    Destroy(blot);
+                    sr.color -= new Color(0, 0, 0, Time.unscaledDeltaTime * 3f);
+                    if (sr.color.a < 0) Destroy(blot);
                 }
-            }
-            if (transform.localScale.x <= 0)
-            {
-                transform.localScale = Vector3.zero;
             }
             yield return null;
         }
+
         Destroy(blot);
+        HardDestroy();
+    }
+
+    private void HardDestroy()
+    {
+        if (_destroyed) return;
+        _destroyed = true;
         Destroy(gameObject);
+    }
+
+    private void SafeSetColor(Component comp, Color c)
+    {
+        switch (comp)
+        {
+            case SpriteRenderer sr: sr.color = c; break;
+            case Light2D l: l.color = c; break;
+        }
     }
 }

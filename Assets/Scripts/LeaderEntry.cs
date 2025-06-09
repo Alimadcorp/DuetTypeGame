@@ -29,7 +29,7 @@ public class LeaderEntry : MonoBehaviour
         }
         score.text = _score.ToString();
         if (isMine) {
-            img.color = myColor;
+            nm.fontStyle = FontStyles.Italic | FontStyles.Underline;
         }
     }
 

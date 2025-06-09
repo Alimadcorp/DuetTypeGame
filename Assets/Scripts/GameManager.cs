@@ -253,6 +253,7 @@ public class GameManager : MonoBehaviour
 
 	public void AddScore(int amt, string source)
 	{
+		if (over) return;
 		if (source == "Blob") blobAmt--;
 		titleVisible = false;
 		int scoreToAdd = (int)(amt * multiplier * powerMultiplier);

@@ -35,7 +35,6 @@ public class Player : MonoBehaviour
     public float initialG;
     public float reflectionPercentage = 0;
     public bool ContinueMode = false;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -107,7 +106,7 @@ public class Player : MonoBehaviour
         {
             case GameManager.GameMode.Flappy:
                 rb.linearVelocity = new Vector2(0, jumpForce);
-                rb.AddForce(new Vector3(0, jumpForce / 2, 0), ForceMode2D.Impulse);
+                rb.AddForce(new Vector3(0, jumpForce, 0), ForceMode2D.Impulse);
                 GameManager.Instance.AddScore(5, "Flap");
                 break;
             case GameManager.GameMode.Clockwise:
@@ -156,6 +155,10 @@ public class Player : MonoBehaviour
     bool submitt = false;
     private IEnumerator RestartCoroutine()
     {
+        ParticleSystem system = GetComponentInChildren<ParticleSystem>();
+        system.gameObject.SetActive(true);
+        system.Play();
+        int LastHighScore = PlayerPrefs.GetInt("highScore");
         int HighScore = PlayerPrefs.GetInt("highScore");
         if (GameManager.Score > HighScore)
         {
@@ -164,11 +167,14 @@ public class Player : MonoBehaviour
             PlayerPrefs.Save();
             submitt = true;
         }
-        while (Time.timeScale > 0)
+        if (Application.platform != RuntimePlatform.WebGLPlayer)
         {
-            Time.timeScale = Mathf.Max(Time.timeScale - 1f * Time.fixedUnscaledDeltaTime, 0);
-            music.pitch = Time.timeScale;
-            yield return new WaitForSecondsRealtime(1f / 60f);
+            while (Time.timeScale > 0)
+            {
+                Time.timeScale = Mathf.Max(Time.timeScale - 1f * Time.fixedUnscaledDeltaTime, 0);
+                music.pitch = Time.timeScale;
+                yield return new WaitForSecondsRealtime(1f / 60f);
+            }
         }
         yield return new WaitForEndOfFrame();
 
@@ -191,7 +197,7 @@ public class Player : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.1f);
         ContinueMode = true;
         loseScreenshotParent.gameObject.SetActive(true);
-        HighScoreText.text = $"High Score: {HighScore}";
+        HighScoreText.text = $"High Score: {LastHighScore}";
         loseScreenshot.sprite = sprite;
         loseScreenshotSound.Play();
         yield return new WaitForSecondsRealtime(1f);
@@ -203,6 +209,7 @@ public class Player : MonoBehaviour
             yield return new WaitForSecondsRealtime(1f / 60f);
         }
         ScoreText.text = $"Score: {GameManager.Score}";
+        HighScoreText.text = $"High Score: {HighScore}";
     }
     public void OnContinue()
     {
@@ -252,11 +259,11 @@ public class Player : MonoBehaviour
         float t = 0;
         while (t < 1)
         {
-            transform.position = Vector3.Lerp(i, new Vector3(game.bigDaddy.transform.position.x, i.y, game.bigDaddy.transform.position.z), t);
+            transform.position = Vector3.Lerp(i, new Vector3(game.bigDaddy.transform.position.x - 6, i.y, game.bigDaddy.transform.position.z), t);
             t += Time.fixedUnscaledDeltaTime;
             yield return null;
         }
-        transform.position = new Vector3(game.bigDaddy.transform.position.x, i.y, game.bigDaddy.transform.position.z);
+        transform.position = new Vector3(game.bigDaddy.transform.position.x - 6, i.y, game.bigDaddy.transform.position.z);
         yield return null;
     }
     private void Pause()

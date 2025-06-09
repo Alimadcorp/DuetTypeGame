@@ -1,37 +1,56 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class DiscordRP : MonoBehaviour
 {
     private long CLIENT_ID = 1381283500765741116;
-    private Discord.Discord discord;
+    private static Discord.Discord discord;
     public static DateTime startTime;
     public static DiscordRP instance;
-    Discord.ActivityManager activityManager;
+    public static Discord.ActivityManager activityManager;
     string state = "In Main Menu";
     string detail = "High Score: 0";
     string miniImg = "icon";
     string miniTxt = "Main Menu";
+    public int updateRate = 3;
+    private float tSince = 0;
+    public static bool Enabled = true;
+    public bool Log = false;
+    public bool runInEditor = false;
     private void Awake()
     {
         instance = this;
+        Enabled = Application.platform == RuntimePlatform.WindowsPlayer || (runInEditor && Application.platform == RuntimePlatform.WindowsEditor);
         detail = $"High Score: {PlayerPrefs.GetInt("highScore")}";
     }
     void Start()
     {
-        discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.NoRequireDiscord);
-        activityManager = discord.GetActivityManager();
-        InvokeRepeating("UpdateRP", 1f, 15f);
+        if (Enabled)
+        {
+            discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.NoRequireDiscord);
+            activityManager = discord.GetActivityManager();
+        }
         startTime = DateTime.Now;
     }
-
+    private void Update()
+    {
+        tSince += Time.unscaledDeltaTime;
+        if (tSince > (float)updateRate)
+        {
+            UpdateRP();
+            tSince = 0;
+        }
+        if (Enabled) discord.RunCallbacks();
+    }
     private void UpdateRP()
     {
-        if (Player.Instance.ClickEnabled)
+        if (GameManager.Score == 0)
         {
-            if (Player.Instance.ldMan.parent.activeInHierarchy) {
+            if (Player.Instance.ldMan.parent.activeInHierarchy || Player.Instance.ldMan.loading.gameObject.activeInHierarchy || Player.Instance.ldMan.error.gameObject.activeInHierarchy)
+            {
                 state = $"Viewing Leaderboard";
-                detail = $"High Score: {PlayerPrefs.GetInt("highScore")}";
+                detail = $"{PlayerPrefs.GetString("myUsername")}: {PlayerPrefs.GetInt("highScore")}";
                 miniImg = "leaderboard";
                 miniTxt = "Viewing leaderboard";
             }
@@ -53,48 +72,71 @@ public class DiscordRP : MonoBehaviour
         else
         {
             string mode = GameManager.Instance.gameMode.ToString();
-            mode = (mode == "Clockwise" || mode == "Anticlockwise") ? "Normal Mode" : mode + " Mode";
+            mode = (mode == "Clockwise" || mode == "AntiClockwise") ? "Round Mode" : mode + " Mode";
             state = $"Playing: {mode}";
             detail = $"Score: {GameManager.Score}";
             miniImg = "play";
             miniTxt = "Too busy playing";
         }
-        if (Player.Instance.ContinueMode)
+        if (GameManager.Instance.over)
         {
             state = $"Just Ended a Round";
             detail = $"Score: {GameManager.Score} | High Score: {PlayerPrefs.GetInt("highScore")}";
             miniImg = "play";
             miniTxt = "Done playing";
         }
+        if (Log) Debug.Log($"{state}\n{detail}");
         var unixTimestamp = new DateTimeOffset(startTime).ToUnixTimeMilliseconds();
-        var activity = new Discord.Activity
+        if (Enabled)
         {
-            State = state,
-            Details = detail,
-            Timestamps =
+            Discord.Activity activity = new Discord.Activity
+            {
+                State = state,
+                Details = detail,
+                Timestamps =
                 {
                     Start = unixTimestamp,
                 },
-            Assets =
+                Assets =
                 {
                     LargeImage = "icon",
                     LargeText = "Gleam Box",
                     SmallImage = miniImg,
                     SmallText = miniTxt,
                 },
-            Instance = true,
-        };
-
-        activityManager.UpdateActivity(activity, (result) => {});
+                Instance = true,
+            };
+            if (Log) Debug.Log("Updating Activity");
+            activityManager.UpdateActivity(activity, (result) => { Debug.Log(result); });
+        }
 
     }
-    private void Update()
+    static bool WantsToQuit()
     {
-        discord.RunCallbacks();
-    }
-    private void OnApplicationQuit()
-    {
-        activityManager.ClearActivity((result) => {});
+        activityManager.ClearActivity((result) => { Application.Quit(); });
         discord.Dispose();
+        /*if (Enabled && discord != null)
+        {
+            DiscordRP.instance.StartCoroutine(OnQuit());
+            return false; // Returning false would cancel the quit
+        }*/
+        return true;
     }
+    [RuntimeInitializeOnLoadMethod]
+    static void RunOnStart()
+    {
+        Application.wantsToQuit += WantsToQuit; // Connect function
+    }
+    /*
+    private static IEnumerator OnQuit()
+    {
+        if (Enabled)
+        {
+            // Try clear activity before quit
+            activityManager.ClearActivity((result) => { Application.Quit(); });
+            discord.Dispose();
+        }
+        yield return new WaitForSecondsRealtime(5f);
+        Application.Quit(); // Quit anyway if 5 seconds passed
+    }*/
 }

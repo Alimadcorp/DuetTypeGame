@@ -12,7 +12,7 @@ namespace Dan
     public class LeaderboardCreatorConfig : ScriptableObject
     {
         public AuthSaveMode authSaveMode = AuthSaveMode.PlayerPrefs;
-        public string fileName = "leaderboard-creator-guid.txt";
+        public string fileName = "leaderboard-guid.txt";
         public bool isUpdateLogsEnabled = true;
         
         public TextAsset leaderboardsFile;
