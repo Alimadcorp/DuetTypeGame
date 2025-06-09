@@ -88,6 +88,7 @@ public class Player : MonoBehaviour
     }
     private void Click()
     {
+        if (Time.timeSinceLevelLoad < 1) return;
         if (ContinueMode) { OnContinue(); ContinueMode = false; };
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
@@ -268,6 +269,7 @@ public class Player : MonoBehaviour
     }
     private void Pause()
     {
+        Time.timeScale = Time.timeScale == 1 ? 0 : 1;
     }
     private void OnEnable()
     {

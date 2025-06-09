@@ -35,6 +35,7 @@ public class GameManager : MonoBehaviour
     public TextMeshPro titleText;
     public GameObject blob;
 
+	public int isLucky = 0;
 	public int blobAmt = 0;
     public bool hintVisible = true;
     public bool titleVisible = true;
@@ -73,12 +74,19 @@ public class GameManager : MonoBehaviour
 		{
             Powerups.instance.AddPowerup(name, 8f);
             powerMultiplier *= 4;
-        } else if(name == "slow")
-		{
-            Powerups.instance.AddPowerup("Slow Mo", 10f);
-			speedMultiplier = 0.4f;
         }
-	}
+        else if (name == "slow")
+        {
+            Powerups.instance.AddPowerup("Slow Mo", 10f);
+            speedMultiplier = 0.4f;
+        }
+        else if (name == "luck")
+        {
+            Powerups.instance.AddPowerup("Luck", 7.5f);
+            isLucky++;
+        }
+		AddScore((int)(200), "Collected Powerup");
+    }
     public void RemovePowerup(string name)
     {
         if (name == "2x")
@@ -92,6 +100,10 @@ public class GameManager : MonoBehaviour
         else if (name == "Slow Mo")
         {
             speedMultiplier = 1;
+        }
+        else if (name == "Luck")
+        {
+            isLucky--;
         }
     }
     void FixedUpdate()
@@ -116,7 +128,7 @@ public class GameManager : MonoBehaviour
     {
         hintText.color = new Color(1, 1, 1, Mathf.Lerp(hintText.color.a, hintVisible ? 1f : 0f, 0.05f));
         titleText.color = new Color(1, 1, 1, Mathf.Lerp(titleText.color.a, titleVisible ? 1f : 0f, 0.05f));
-		if (alpha > 0.01f)
+		if (alpha > 0.00001f)
 		{
 			alpha = Mathf.Lerp(alpha, titleVisible ? 1f : 0f, 0.05f);
 			for (int i = 0; i < imgs.Length; i++)
@@ -126,6 +138,7 @@ public class GameManager : MonoBehaviour
 		}
 		else
 		{
+			alpha = 0;
             for (int i = 0; i < imgs.Length; i++)
             {
 				imgs[i].gameObject.GetComponent<Button>().interactable = false;
@@ -144,7 +157,7 @@ public class GameManager : MonoBehaviour
 
 	private void UpdateTimers()
 	{
-		sinceWallSpawn += Time.fixedDeltaTime;
+		sinceWallSpawn += Time.fixedDeltaTime * speedMultiplier;
 		time += Time.fixedDeltaTime;
 		sinceGameModeChange += Time.fixedDeltaTime;
 
@@ -160,7 +173,7 @@ public class GameManager : MonoBehaviour
 		if (gameMode == GameMode.Flappy && sinceGameModeChange > 2f && sinceWallSpawn > 1f)
 		{
 			sinceWallSpawn = Random.Range(-3f, -1f);
-			sinceWallSpawn += Mathf.Clamp((multiplier - 1f) / 3, 0, 3);
+			sinceWallSpawn += Mathf.Clamp((multiplier - 1f) / 3, 0f, 1f);
 			flappyWallSpawner.Spawn(
 				wallSpeed * Mathf.Clamp(multiplier / 4, 1, 2),
 				false,
@@ -170,10 +183,12 @@ public class GameManager : MonoBehaviour
 		if ((gameMode == GameMode.AntiClockwise || gameMode == GameMode.Clockwise) && blobAmt < 2)
 		{
 			Blob newBlob = Instantiate(blob, RandomTransform(), Quaternion.identity, bigDaddy.transform).GetComponent<Blob>();
-			if((int)Random.Range(0, 15) == 2)
+			int r = (isLucky > 0) ? 1 : Random.Range(0, 15);
+			if(r == 1)
 			{
-				string random = Blob.intToId((int)Random.Range(0, 3));
-				newBlob.MakePowerup(random);
+				int random = (int)Random.Range(0, 4);
+				if (random == 3 && (isLucky > 0)) random--;
+                newBlob.MakePowerup(Blob.intToId(random));
 			}
 			blobAmt++;
 		}

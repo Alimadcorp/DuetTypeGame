@@ -30,6 +30,7 @@ public class Blob : MonoBehaviour
         "2x" => 0,
         "4x" => 1,
         "slow" => 2,
+        "luck" => 3,
         _ => 0
     };
 
@@ -38,6 +39,7 @@ public class Blob : MonoBehaviour
         0 => "2x",
         1 => "4x",
         2 => "slow",
+        3 => "luck",
         _ => ""
     };
 
