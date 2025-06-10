@@ -1,0 +1,23 @@
+# ninja log v5
+42	3476	7711749348530026	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	db3f07a9f2a0b155
+248	828	7711749321568508	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2fc7443f6203514b
+2	3229	7711749345907182	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	2c190807ddfc1b89
+175	3131	7711749344840265	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	a240d84d41f92048
+832	1603	7711749329641196	C:/Users/finnn/Documents/GitHub/DuetTypeGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1l1u4754/obj/arm64-v8a/libswappywrapper.so	c885ed1969c4559e
+214	3287	7711749346555016	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	82c8c584c8b151a2
+16	3118	7711749344855631	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7a84be4e90fb6e2c
+82	3201	7711749344586817	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	275ef6d2d98aa986
+110	3262	7711749346302676	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	c4f8df67ea3cea1b
+65	3413	7711749347897736	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	82a125adb618cc74
+3477	3626	7711749350054083	C:/Users/finnn/Documents/GitHub/DuetTypeGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1l1u4754/obj/arm64-v8a/libgame.so	a0fa0f8613ccfa62
+100	611	7711768600223303	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2fc7443f6203514b
+614	839	7711768602511745	C:/Users/finnn/Documents/GitHub/DuetTypeGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1l1u4754/obj/arm64-v8a/libswappywrapper.so	c885ed1969c4559e
+83	3078	7711768624837529	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	c4f8df67ea3cea1b
+54	3084	7711768624867821	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	275ef6d2d98aa986
+65	3105	7711768625125942	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	a240d84d41f92048
+33	3117	7711768625206351	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7a84be4e90fb6e2c
+20	3164	7711768625722361	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	2c190807ddfc1b89
+91	3172	7711768625811196	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	82c8c584c8b151a2
+74	3326	7711768627355979	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	82a125adb618cc74
+46	3392	7711768628002258	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	db3f07a9f2a0b155
+3393	3539	7711768629480910	C:/Users/finnn/Documents/GitHub/DuetTypeGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1l1u4754/obj/arm64-v8a/libgame.so	a0fa0f8613ccfa62

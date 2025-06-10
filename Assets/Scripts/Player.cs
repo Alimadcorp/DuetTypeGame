@@ -90,7 +90,8 @@ public class Player : MonoBehaviour
     private void Click()
     {
         if (Time.timeSinceLevelLoad < 1) return;
-        if (ContinueMode) { OnContinue(); ContinueMode = false; };
+        if (ContinueMode) { OnContinue(); ContinueMode = false; }
+        ;
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
 		if(lost) return;
@@ -104,7 +105,7 @@ public class Player : MonoBehaviour
         {
             rb.gravityScale = initialG;
         }
-       // AudioSource.PlayClipAtPoint(jump, transform.position);
+        // AudioSource.PlayClipAtPoint(jump, transform.position);
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
