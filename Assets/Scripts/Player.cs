@@ -35,7 +35,7 @@ public class Player : MonoBehaviour
     public float initialG;
     public float reflectionPercentage = 0;
     public bool ContinueMode = false;
-    private bool gameOvered = false;
+    public bool lost = false;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -94,6 +94,7 @@ public class Player : MonoBehaviour
         ;
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
+		if(lost) return;
         game.hintVisible = false;
         if (initialStop)
         {
@@ -152,9 +153,9 @@ public class Player : MonoBehaviour
     }
     public void Restart()
     {
-        if (gameOvered) return;
+		if(lost) return;
         game.over = true;
-        gameOvered = true;
+		lost = true;
         StartCoroutine(RestartCoroutine());
     }
     bool submitt = false;
@@ -180,7 +181,10 @@ public class Player : MonoBehaviour
                 music.pitch = Time.timeScale;
                 yield return new WaitForSecondsRealtime(1f / 60f);
             }
-        }
+        } else {
+			yield return new WaitForSecondsRealtime(0.1f);
+			Time.timeScale = 0;
+		}
         yield return new WaitForEndOfFrame();
 
         Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();

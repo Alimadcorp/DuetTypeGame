@@ -47,7 +47,7 @@ public class DiscordRP : MonoBehaviour
     {
         if (GameManager.Score == 0)
         {
-            if (Player.Instance.ldMan.parent.activeInHierarchy || Player.Instance.ldMan.loading.gameObject.activeInHierarchy || Player.Instance.ldMan.error.gameObject.activeInHierarchy)
+            /*if (Player.Instance.ldMan.parent.activeInHierarchy || Player.Instance.ldMan.loading.gameObject.activeInHierarchy || Player.Instance.ldMan.error.gameObject.activeInHierarchy)
             {
                 state = $"Viewing Leaderboard";
                 detail = $"{PlayerPrefs.GetString("myUsername")}: {PlayerPrefs.GetInt("highScore")}";
@@ -62,12 +62,12 @@ public class DiscordRP : MonoBehaviour
                 miniTxt = "Viewing credits";
             }
             else
-            {
+            {*/
                 state = "In Main Menu";
                 detail = $"High Score: {PlayerPrefs.GetInt("highScore")}";
                 miniImg = "icon";
                 miniTxt = "Main Menu";
-            }
+            //}
         }
         else
         {
