@@ -10,7 +10,7 @@ namespace Dan.Main
 {
     public static class LeaderboardCreator
     {
-        public static bool LoggingEnabled { get; set; } = true;
+        public static bool LoggingEnabled { get; set; } = false;
         
         private static LeaderboardCreatorBehaviour _behaviour;
 

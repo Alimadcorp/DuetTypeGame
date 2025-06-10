@@ -8,8 +8,8 @@ public class AspectRatioUtility : MonoBehaviour
     public float lwa = 9.0f / 16.0f;
     void Start()
     {
-        Adjust();
         InvokeRepeating("Check", 0.25f, 0.5f);
+        InvokeRepeating("Adjust", 0.1f, 5f);
     }
     public void Check()
     {

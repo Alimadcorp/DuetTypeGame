@@ -1,9 +1,9 @@
 using UnityEngine;
 using Dan.Main;
-using System;
 using TMPro;
 using Dan.Models;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 public class LeaderboardManager : MonoBehaviour
 {
     public TextMeshProUGUI loading;
@@ -16,6 +16,7 @@ public class LeaderboardManager : MonoBehaviour
     public GameObject UIParent, bg;
     private int scorer = 0;
     private bool submiting = false;
+    public Button relButton;
     public void OpenLeaderboard(bool hi)
     {
         if (!hi)
@@ -30,19 +31,21 @@ public class LeaderboardManager : MonoBehaviour
             loading.gameObject.SetActive(true);
             error.gameObject.SetActive(false);
         }
+        relButton.interactable = false;
         Leaderboards.Main.GetEntries(OnLoaded, OnError);
     }
     private void OnLoaded(Entry[] entries)
     {
+        relButton.interactable = true;
         parent.SetActive(true);
-        bool foundMine = false;
+        bool foundMine = false, foundMineInTop10 = false; int myEntryI = 0;
         loading.gameObject.SetActive(false);
-        for (int i = 0; i < (entries.Length <= 14 ? entries.Length : 14); i++)
+        for (int i = 0; i < entries.Length; i++)
         {
-            ldarray[i].SetEntry(entries[i].Username, entries[i].Rank, entries[i].Score, entries[i].IsMine());
             if (entries[i].IsMine())
             {
                 foundMine = true;
+                myEntryI = i;
                 if (entries[i].Score != PlayerPrefs.GetInt("highScore"))
                 {
                     if (!submiting)
@@ -52,13 +55,36 @@ public class LeaderboardManager : MonoBehaviour
                 }
             }
         }
+        if (foundMine)
+        {
+            if (PlayerPrefs.GetInt("highScore") < entries[myEntryI].Score)
+            {
+                PlayerPrefs.SetInt("highScore", entries[myEntryI].Score);
+                PlayerPrefs.SetString("myUsername", entries[myEntryI].Username);
+                PlayerPrefs.Save();
+            }
+        }
+        for (int i = 0; i < (entries.Length <= 11 ? entries.Length : 11); i++)
+        {
+            ldarray[i].SetEntry(entries[i].Username, entries[i].Rank, entries[i].Score, entries[i].IsMine());
+            if (entries[i].IsMine())
+            {
+                foundMineInTop10 = true;
+            }
+        }
+        int myEntryIndex = 10;
+        if (!foundMineInTop10 && foundMine)
+        {
+            ldarray[myEntryIndex].SetEntry(entries[myEntryI].Username, entries[myEntryI].Rank, entries[myEntryI].Score, true);
+        }
         if (!foundMine)
         {
-            if (!submiting)
+            if (!submiting && PlayerPrefs.GetInt("highScore") != 0 && PlayerPrefs.GetString("myUsername") != "")
             {
                 SubmitEntry(PlayerPrefs.GetInt("highScore"));
             }
         }
+
     }
     private void OnError(string _error)
     {
@@ -77,27 +103,29 @@ public class LeaderboardManager : MonoBehaviour
         {
             PlayerPrefs.SetString("myUsername", username.text);
             PlayerPrefs.Save();
-            SubmitEntry(-1);
+            if (PlayerPrefs.GetInt("highScore") > 0) SubmitEntry(-1);
             UIParent.SetActive(false);
         }
         else
         {
             string lastName = PlayerPrefs.GetString("myUsername");
+            if (username.text.ToUpper() == "RESETDATA") { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); SceneManager.LoadSceneAsync(0); return; }
             PlayerPrefs.SetString("myUsername", username.text);
             PlayerPrefs.Save();
-            if (PlayerPrefs.GetString("myUsername") != lastName){
-                DeleteEntry();
+            if (PlayerPrefs.GetString("myUsername") != lastName)
+            {
+                if (PlayerPrefs.GetInt("highScore") > 0) SubmitEntry(PlayerPrefs.GetInt("highScore"));
             }
             else
             {
-                SubmitEntry(PlayerPrefs.GetInt("highScore"));
+                if (PlayerPrefs.GetInt("highScore") > 0) SubmitEntry(PlayerPrefs.GetInt("highScore"));
             }
             UIParent.SetActive(false);
         }
     }
     public void SubmitEntry(int score)
     {
-        Debug.Log(PlayerPrefs.GetString("myUsername") + " : " + PlayerPrefs.GetInt("highScore"));
+        if (PlayerPrefs.GetInt("highScore") == 0) return;
         submiting = true;
         if (score == -1) score = scorer;
         scorer = score;
@@ -108,7 +136,10 @@ public class LeaderboardManager : MonoBehaviour
         }
         else
         {
-            Leaderboards.Main.UploadNewEntry(usnm, score, Grs);
+            if (username.text.ToUpper() == "RESETDATA") { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); SceneManager.LoadSceneAsync(0); return; }
+            if (usnm.ToLower() == "delete entry") { DeleteEntry(); return; }
+            if (usnm.ToLower() == "dont upload") return;
+            Leaderboards.Main.UploadNewEntry(usnm, score, PlayerPrefs.GetString("history"), Grs);
         }
     }
     private void SES()
@@ -139,6 +170,6 @@ public class LeaderboardManager : MonoBehaviour
     }
     private void OnDelete(bool yes)
     {
-        SubmitEntry(PlayerPrefs.GetInt("highScore"));
+        OpenLeaderboard(true);
     }
 }

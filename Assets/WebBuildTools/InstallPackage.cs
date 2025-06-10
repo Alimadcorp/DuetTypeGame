@@ -167,6 +167,7 @@ namespace Alimad.Main
                         }
                         catch(System.UnauthorizedAccessException ex){
                             // Cuz unity is installed in C://Program Files most of the time, we won't have access to it
+                            Debug.Log(ex);
                             EditorUtility.DisplayDialog("Error", $"Copy access denied to {targetPath}.", "OK");
                             Application.OpenURL(WBTFolder(true) + "/Documentation/Errors/ifnoaccess.txt");
                         }

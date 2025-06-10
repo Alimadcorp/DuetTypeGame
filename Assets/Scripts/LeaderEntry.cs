@@ -30,6 +30,11 @@ public class LeaderEntry : MonoBehaviour
         score.text = _score.ToString();
         if (isMine) {
             nm.fontStyle = FontStyles.Italic | FontStyles.Underline;
+            img.color = myColor;
+        }
+        else
+        {
+            nm.fontStyle = FontStyles.Normal;
         }
     }
 

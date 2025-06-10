@@ -7,6 +7,8 @@ public class PowerupDisplay : MonoBehaviour
     public TextMeshPro text;
     public GameObject fill;
     public float time;
+    public float Ttime;
+    public float delay;
     public float percentage;
     private bool ended = false;
     public int slotIndex;
@@ -14,14 +16,24 @@ public class PowerupDisplay : MonoBehaviour
     public void Initiate(float t, string name)
     {
         time = t;
+        Ttime = t;
         text.text = name;
         id = name;
         percentage = 1;
     }
+    public void addDelay(float t)
+    {
+        delay += t;
+    }
     void Update()
     {
+        if (delay > 0) {
+            delay -= Time.deltaTime;
+            return;
+        }
         fill.transform.localScale = new Vector3(Mathf.Clamp01(percentage), 1, 1);
-        percentage -= Time.deltaTime / time;
+        time -= Time.deltaTime;
+        percentage = time / Ttime;
         if(percentage < 0 && !ended)
         {
             percentage = 0;
@@ -32,6 +44,8 @@ public class PowerupDisplay : MonoBehaviour
     private IEnumerator Remove()
     {
         float t = 1;
+        if (text.text == "Slow Mo") Powerups.instance.slowMos--;
+        if (text.text == "Luck") Powerups.instance.luckMos--;
         GameManager.Instance.RemovePowerup(id);
         while (t > 0)
         {

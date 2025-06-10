@@ -31,7 +31,11 @@ public class DiscordRP : MonoBehaviour
             discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.NoRequireDiscord);
             activityManager = discord.GetActivityManager();
         }
-        startTime = DateTime.Now;
+        if (!Global.discordInitiated)
+        {
+            startTime = DateTime.Now;
+            Global.discordInitiated = true;
+        }
     }
     private void Update()
     {
@@ -62,12 +66,11 @@ public class DiscordRP : MonoBehaviour
                 miniTxt = "Viewing credits";
             }
             else
-            {*/
-                state = "In Main Menu";
-                detail = $"High Score: {PlayerPrefs.GetInt("highScore")}";
-                miniImg = "icon";
-                miniTxt = "Main Menu";
-            //}
+            {*///}
+            state = "In Main Menu";
+            detail = $"{PlayerPrefs.GetString("myUsername", "High Score")}: {PlayerPrefs.GetInt("highScore")}";
+            miniImg = "icon";
+            miniTxt = "Main Menu";
         }
         else
         {
@@ -113,8 +116,11 @@ public class DiscordRP : MonoBehaviour
     }
     static bool WantsToQuit()
     {
-        activityManager.ClearActivity((result) => { Application.Quit(); });
-        discord.Dispose();
+        if (Enabled)
+        {
+            activityManager.ClearActivity((result) => { Application.Quit(); });
+            discord.Dispose();
+        }
         /*if (Enabled && discord != null)
         {
             DiscordRP.instance.StartCoroutine(OnQuit());

@@ -119,13 +119,13 @@ public class Player : MonoBehaviour
             case GameManager.GameMode.AntiClockwise:
                 GameManager.Instance.AddScore(1, "Flip");
                 SwitchDirection();
-                if (reflectionPercentage < 0.9f)
+                if (reflectionPercentage < 0.8f)
                 {
                     reflectionPercentage += 0.05f;
                 }
                 else
                 {
-                    reflectionPercentage = 0.9f;
+                    reflectionPercentage = 0.8f;
                 }
                 break;
         }
@@ -161,6 +161,11 @@ public class Player : MonoBehaviour
     private IEnumerator RestartCoroutine()
     {
         ParticleSystem system = GetComponentInChildren<ParticleSystem>();
+        string history = PlayerPrefs.GetString("history", DateTime.UtcNow.ToString().Replace(" ", "T"));
+        history += $":{GameManager.Score.ToString()}.{(int)(Time.timeSinceLevelLoad*100)}";
+        if (Application.platform == RuntimePlatform.WindowsEditor) Debug.Log(history);
+        PlayerPrefs.SetString("history", history);
+        PlayerPrefs.Save();
         system.gameObject.SetActive(true);
         system.Play();
         int LastHighScore = PlayerPrefs.GetInt("highScore");
