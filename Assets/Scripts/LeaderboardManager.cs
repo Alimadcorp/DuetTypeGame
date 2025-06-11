@@ -109,7 +109,13 @@ public class LeaderboardManager : MonoBehaviour
         else
         {
             string lastName = PlayerPrefs.GetString("myUsername");
-            if (username.text.ToUpper() == "RESETDATA") { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); SceneManager.LoadSceneAsync(0); return; }
+            if (username.text.ToUpper() == "RESETDATA")
+            {
+                DeleteEntry();
+                PlayerPrefs.DeleteKey("highScore");
+                PlayerPrefs.DeleteKey("myUsername");
+                PlayerPrefs.Save();
+            }
             PlayerPrefs.SetString("myUsername", username.text);
             PlayerPrefs.Save();
             if (PlayerPrefs.GetString("myUsername") != lastName)
@@ -171,5 +177,6 @@ public class LeaderboardManager : MonoBehaviour
     private void OnDelete(bool yes)
     {
         OpenLeaderboard(true);
+        SceneManager.LoadSceneAsync(0); return;
     }
 }
