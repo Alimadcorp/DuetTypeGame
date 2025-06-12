@@ -101,6 +101,7 @@ public class LeaderboardManager : MonoBehaviour
     {
         if (PlayerPrefs.GetString("myUsername") == "")
         {
+            Logger.Log("Connect: " + username + ", " + PlayerPrefs.GetInt("highScore"));
             PlayerPrefs.SetString("myUsername", username.text);
             PlayerPrefs.Save();
             if (PlayerPrefs.GetInt("highScore") > 0) SubmitEntry(-1);
@@ -111,6 +112,7 @@ public class LeaderboardManager : MonoBehaviour
             string lastName = PlayerPrefs.GetString("myUsername");
             if (username.text.ToUpper() == "RESETDATA")
             {
+                Logger.Log("RESETDATA: " + username + ", " + lastName + ", " + PlayerPrefs.GetInt("highScore"));
                 DeleteEntry();
                 PlayerPrefs.DeleteKey("highScore");
                 PlayerPrefs.DeleteKey("myUsername");
@@ -120,6 +122,7 @@ public class LeaderboardManager : MonoBehaviour
             PlayerPrefs.Save();
             if (PlayerPrefs.GetString("myUsername") != lastName)
             {
+                Logger.Log("Change name: " + username.text + " to " + lastName + ", " + PlayerPrefs.GetInt("highScore"));
                 if (PlayerPrefs.GetInt("highScore") > 0) SubmitEntry(PlayerPrefs.GetInt("highScore"));
             }
             else
@@ -145,6 +148,7 @@ public class LeaderboardManager : MonoBehaviour
             if (username.text.ToUpper() == "RESETDATA") { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); SceneManager.LoadSceneAsync(0); return; }
             if (usnm.ToLower() == "delete entry") { DeleteEntry(); return; }
             if (usnm.ToLower() == "dont upload") return;
+            Logger.Log("Submit Entry: " + usnm + ", " + score);
             Leaderboards.Main.UploadNewEntry(usnm, score, PlayerPrefs.GetString("history"), Grs);
         }
     }
@@ -172,6 +176,7 @@ public class LeaderboardManager : MonoBehaviour
 
     public void DeleteEntry()
     {
+        Logger.Log("Delete Entry: " + PlayerPrefs.GetString("myUsername") + ", " + PlayerPrefs.GetString("highScore"));
         Leaderboards.Main.DeleteEntry(OnDelete);
     }
     private void OnDelete(bool yes)

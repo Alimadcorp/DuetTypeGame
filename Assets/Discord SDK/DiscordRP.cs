@@ -9,6 +9,7 @@ public class DiscordRP : MonoBehaviour
     public static DateTime startTime;
     public static DiscordRP instance;
     public static Discord.ActivityManager activityManager;
+    public static Discord.UserManager userManager;
     string state = "In Main Menu";
     string detail = "High Score: 0";
     string miniImg = "icon";
@@ -24,12 +25,18 @@ public class DiscordRP : MonoBehaviour
         Enabled = Application.platform == RuntimePlatform.WindowsPlayer || (runInEditor && Application.platform == RuntimePlatform.WindowsEditor);
         detail = $"High Score: {PlayerPrefs.GetInt("highScore")}";
     }
+    void Connect()
+    {
+        Logger.Log("Connect Discord: " + PlayerPrefs.GetString("myUsername") + " to " + userManager.GetCurrentUser().Username);
+    }
     void Start()
     {
         if (Enabled)
         {
             discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.NoRequireDiscord);
             activityManager = discord.GetActivityManager();
+            userManager = discord.GetUserManager();
+            Invoke("Connect", 5f);
         }
         if (!Global.discordInitiated)
         {

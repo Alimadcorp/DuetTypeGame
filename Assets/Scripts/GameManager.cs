@@ -1,9 +1,11 @@
+using AYellowpaper.SerializedCollections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
-    public enum GameMode { Flappy, Clockwise, AntiClockwise };
+    public enum GameMode { Flappy, Clockwise, AntiClockwise, Fish };
     public GameMode gameMode;
     public static GameManager Instance;
     private float sinceGameModeChange = 0f;
@@ -15,6 +17,7 @@ public class GameManager : MonoBehaviour
     public float TargetSpeed = 0.25f;
     public int switchThreshold = 1000;
     public float rateOfIncrease;
+    public int Blobs = 0;
 
     [Header("Parameters")]
     public float wallSpeed, opening, speedFactor = 1.0f, multiplier = 1.0f, multiplierUpSpeed = 1f;
@@ -28,15 +31,22 @@ public class GameManager : MonoBehaviour
     public AudioClip moreScore;
     public AudioSource music;
     public GameObject switchText;
+    public GameObject comboAdd;
+    public GameObject comboSpawner;
     public TextMeshPro hintText;
     public TextMeshPro titleText;
+    public TextMeshPro blobText;
+    public TextMeshPro modeText;
+    public TextMeshPro comboText;
     public GameObject blob;
-
+    public Light2D bgLight;
+    public float comboMultiplier = 1;
     public int boxesPerSpawn = 2;
     public int isLucky = 0;
     public int blobAmt = 0;
     public bool hintVisible = true;
     public bool titleVisible = true;
+    public float SpeedMiniFishFactor;
     public bool Paused = true;
     private int scoreSinceChange = 0;
     public int powerMultiplier = 1;
@@ -45,28 +55,45 @@ public class GameManager : MonoBehaviour
     public bool over = false;
     public float alpha = 1;
     public Image[] imgs;
+    public Color[] GameModeColors;
+    public Color[] comboColors;
+
+    [SerializedDictionary("ID", "Gradient")]
+    public SerializedDictionary<string, Gradient> Trails;
 
     private void Awake()
     {
+        Blobs = PlayerPrefs.GetInt("Blobs");
         if (Instance != null && Instance != this)
         {
+
             Destroy(gameObject);
             return;
         }
         Instance = this;
         Time.timeScale = 1f;
         Score = 0;
+        Global.newSession = false;
     }
-
     private void Start()
     {
         SetGamemode(gameMode);
+        blobText.text = Blobs.ToString();
+        if (Global.newSession) Logger.LogImp("Session start: " + PlayerPrefs.GetString("myUsername"));
+        SetTrail(PlayerPrefs.GetString("myTrail", "default"));
+    }
+    public void SetTrail(string id)
+    {
+        Gradient gradient = Trails[id];
+        Player.Instance.trail.colorGradient = gradient;
+        PlayerPrefs.SetString("myTrail", id);
+        PlayerPrefs.Save();
     }
     public void AddPowerup(string name)
     {
         if (name == "2x")
         {
-            Powerups.instance.AddPowerup(name, 12f);
+            Powerups.instance.AddPowerup(name, 10f);
             powerMultiplier *= 2;
         }
         else if (name == "4x")
@@ -76,12 +103,12 @@ public class GameManager : MonoBehaviour
         }
         else if (name == "slow")
         {
-            Powerups.instance.AddPowerup("Slow Mo", 10f);
+            Powerups.instance.AddPowerup("Slow Mo", 5f);
             speedMultiplier++;
         }
         else if (name == "luck")
         {
-            Powerups.instance.AddPowerup("Luck", 7.5f);
+            Powerups.instance.AddPowerup("Luck", 5f);
             isLucky++;
         }
         AddScore(50, "Collected Powerup");
@@ -150,7 +177,7 @@ public class GameManager : MonoBehaviour
         multiplier += multiplierUpSpeed * Time.fixedDeltaTime;
         if (multiplier >= 1.5f)
         {
-            multiText.text = $"x{multiplier:F1}";
+            multiText.text = $"x{(multiplier * powerMultiplier * comboMultiplier):F1}";
         }
     }
 
@@ -159,6 +186,8 @@ public class GameManager : MonoBehaviour
         sinceWallSpawn += Time.fixedDeltaTime * (speedMultiplier > 1 ? 0.6f : 1f);
         time += Time.fixedDeltaTime;
         sinceGameModeChange += Time.fixedDeltaTime;
+        comboText.text = $"x{comboMultiplier} Combo";
+        comboText.GetComponent<ComboText>().SetColor(comboColors[(int)comboMultiplier - 1], true);
 
         if (time > 10f / multiplier)
         {
@@ -205,13 +234,20 @@ public class GameManager : MonoBehaviour
         Player.Instance.rb.gravityScale = 0;
         Player.Instance.rb.linearVelocity = Vector2.zero;
         Player.Instance.initialStop = true;
+        Player.Instance.GetComponent<SpriteRenderer>().color = GameModeColors[(int)_gameMode];
+        Player.Instance.GetComponentInChildren<Light2D>().color = GameModeColors[(int)_gameMode];
+        bgLight.color = GameModeColors[(int)_gameMode];
         opening = Mathf.Clamp(opening - 2, 9, 20);
 
         if (gameMode == GameMode.Clockwise || gameMode == GameMode.AntiClockwise)
         {
             blobAmt = 0;
         }
-
+        if(gameMode == GameMode.Fish)
+        {
+            Player.Instance.FishMode(true);
+            RodNFish.instance.Spawn(true);
+        }
         gameMode = _gameMode;
         sinceGameModeChange = 0f;
 
@@ -225,6 +261,7 @@ public class GameManager : MonoBehaviour
                 Paused = true;
                 tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.down * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
                 tmp.text = "Snake\nMode";
+                modeText.text = "Snake Mode";
                 hintVisible = true;
                 Player.Instance.reflectionPercentage = 0f;
                 hintText.text = "Tap to switch direction";
@@ -238,6 +275,7 @@ public class GameManager : MonoBehaviour
                 Paused = true;
                 tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.down * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
                 tmp.text = "Snake\nMode\n(Anti Clockwise)";
+                modeText.text = "Snake Mode (Anti Clockwise)";
                 hintVisible = true;
                 Player.Instance.reflectionPercentage = 0f;
                 hintText.text = "Tap to switch directions";
@@ -253,7 +291,24 @@ public class GameManager : MonoBehaviour
                 Player.Instance.ResetPosition();
                 tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.up * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
                 tmp.text = "Flappy\nMode";
+                modeText.text = "Flappy Mode";
                 hintText.text = "Tap to jump";
+                hintVisible = true;
+                foreach (var blob in blobs)
+                {
+                    if (blob != null) blob.Collect();
+                }
+                break;
+            case GameMode.Fish:
+                BigDaddy.moveDirection = Vector3.right * 30;
+                Paused = true;
+                Player.Instance.initialStop = true;
+                Player.Instance.FishMode(false);
+                RodNFish.instance.Spawn(false);
+                tmp = Instantiate(switchText, bigDaddy.transform.position + Vector3.up * 3, Quaternion.identity, bigDaddy.transform).GetComponent<TextMeshPro>();
+                tmp.text = "Fish\nMode";
+                modeText.text = "Fish Mode";
+                hintText.text = "Hold to pull";
                 hintVisible = true;
                 foreach (var blob in blobs)
                 {
@@ -269,8 +324,8 @@ public class GameManager : MonoBehaviour
         scoreSinceChange = 0;
         boxesPerSpawn++;
         int current = (int)gameMode;
-        int next;
-        do { next = Random.Range(0, 3); }
+        int next = 3;
+        do { next = Random.Range(0, 4); }
         while (next == current);
         GameMode nextMode = (GameMode)next;
         SetGamemode(nextMode);
@@ -281,7 +336,8 @@ public class GameManager : MonoBehaviour
         if (over) return;
         if (source == "Blob") blobAmt--;
         titleVisible = false;
-        int scoreToAdd = (int)(amt * multiplier * powerMultiplier);
+        blobText.text = Blobs.ToString();
+        int scoreToAdd = (int)(amt * multiplier * powerMultiplier * comboMultiplier);
         Score += scoreToAdd;
         scoreSinceChange += (int)(amt * multiplier);
 
@@ -317,5 +373,13 @@ public class GameManager : MonoBehaviour
     {
         Paused = false;
         Player.Instance.rb.gravityScale = gameMode == GameMode.Flappy ? Player.Instance.initialG : 0;
+    }
+    public void AddCombo(float strength)
+    {
+        if(strength < 0.1f) { comboMultiplier = 1; return; }
+        comboMultiplier += strength;
+        GameObject newComboText = Instantiate(comboAdd, comboSpawner.transform.position, Quaternion.identity, bigDaddy.transform);
+        newComboText.GetComponent<TextMeshPro>().text = $"x{comboMultiplier} Combo";
+        newComboText.GetComponent<ComboText>().SetColor(comboColors[Mathf.Clamp((int)comboMultiplier - 1, 0, comboColors.Length - 1)], false);
     }
 }

@@ -20,11 +20,14 @@ public class Player : MonoBehaviour
     public TextMeshPro ScoreText;
     public TextMeshPro HighScoreText;
     public TextMeshPro ScoreTextMain;
+    public TrailRenderer trail;
     public AudioClip jump;
     public LeaderboardManager ldMan;
     public GameObject credObj;
     [Header("Tweakables")]
+    public int sinceLastCollect = 100;
     public float jumpForce = 1.0f;
+    public bool MouseHeld = false;
     public float gravity = 1.0f;
     public bool ClickEnabled = false;
     public float moveSpeed = 1.0f;
@@ -32,6 +35,9 @@ public class Player : MonoBehaviour
     private int score = 0;
     public bool initialStop = true;
     public float coolDown = 1f;
+    public float fishForce = 1f;
+    public float fishHeight = 1f;
+    public float fishTimer = 1f;
     public float initialG;
     public float reflectionPercentage = 0;
     public bool ContinueMode = false;
@@ -44,6 +50,7 @@ public class Player : MonoBehaviour
         inputActions = new InputActions();
         normalActions = inputActions.Normal;
         normalActions.Click.started += ctx => Click();
+        normalActions.Click.canceled += ctx => UnClick();
         normalActions.Pause.performed += ctx => Pause();
         Instance = this;
     }
@@ -86,16 +93,47 @@ public class Player : MonoBehaviour
                     break;
             }
         }
+        if(game.gameMode == GameManager.GameMode.Fish)
+        {
+            fishTimer -= Time.fixedDeltaTime;
+            if (MouseHeld)
+            {
+                rb.AddForce(Vector3.up * fishForce, ForceMode2D.Force);
+            }
+            float yDist = Mathf.Abs(transform.position.y - RodNFish.fishY);
+            if(yDist < fishHeight)
+            {
+                RodNFish.instance.fish.GetComponent<SpriteRenderer>().color = Color.white;
+                if (fishTimer < 0 && !initialStop)
+                {
+                    game.AddScore((int)(fishHeight - yDist + 30), "Fishy");
+                    fishTimer = 0.5f;
+                }
+            }
+            else
+            {
+                RodNFish.instance.fish.GetComponent<SpriteRenderer>().color = Color.red;
+            }
+        }
+    }
+    private void UnClick()
+    {
+        MouseHeld = false;
     }
     private void Click()
     {
         if (Time.timeSinceLevelLoad < 1) return;
         if (ContinueMode) { OnContinue(); ContinueMode = false; }
-        ;
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
 		if(lost) return;
+        sinceLastCollect++;
+        if(sinceLastCollect > 2)
+        {
+            game.AddCombo(0);
+        }
         game.hintVisible = false;
+        MouseHeld = true;
         if (initialStop)
         {
             game.StartGame();
@@ -104,6 +142,10 @@ public class Player : MonoBehaviour
         if (game.gameMode == GameManager.GameMode.Flappy)
         {
             rb.gravityScale = initialG;
+        }
+        if (game.gameMode == GameManager.GameMode.Fish)
+        {
+            rb.gravityScale = initialG * Mathf.Sqrt(game.Speed) * game.SpeedMiniFishFactor;
         }
         // AudioSource.PlayClipAtPoint(jump, transform.position);
         switch (game.gameMode)
@@ -151,23 +193,27 @@ public class Player : MonoBehaviour
         Vector2 v = rb.linearVelocity * reflectionPercentage;
         rb.linearVelocity = game.gameMode == GameManager.GameMode.Clockwise ? new Vector2(v.y, -v.x) : new Vector2(-v.y, v.x);
     }
-    public void Restart()
+    public void Restart(Collision2D collision)
     {
 		if(lost) return;
         game.over = true;
 		lost = true;
-        StartCoroutine(RestartCoroutine());
+        StartCoroutine(RestartCoroutine(collision));
     }
     bool submitt = false;
-    private IEnumerator RestartCoroutine()
+    private IEnumerator RestartCoroutine(Collision2D collision)
     {
         ParticleSystem system = GetComponentInChildren<ParticleSystem>();
+        system.startColor = GetComponent<SpriteRenderer>().color;
         string history = PlayerPrefs.GetString("history", DateTime.UtcNow.ToString().Replace(" ", "T"));
         history += $":{GameManager.Score.ToString()}.{(int)(Time.timeSinceLevelLoad*100)}";
         if (Application.platform == RuntimePlatform.WindowsEditor) Debug.Log(history);
         PlayerPrefs.SetString("history", history);
+        PlayerPrefs.SetInt("Blobs", game.Blobs);
         PlayerPrefs.Save();
+        Logger.Log("GameOver: " + PlayerPrefs.GetString("myUsername") + ", " + GameManager.Score.ToString() + " History: " + history);
         system.gameObject.SetActive(true);
+        system.gameObject.transform.position = collision.contacts[0].point;
         system.Play();
         int LastHighScore = PlayerPrefs.GetInt("highScore");
         int HighScore = PlayerPrefs.GetInt("highScore");
@@ -243,10 +289,28 @@ public class Player : MonoBehaviour
         if (collision.transform.tag == "Wall")
         {
             game.over = true;
-            Restart();
+            Restart(collision);
         }
         if (collision.transform.tag == "Blob")
         {
+            if (sinceLastCollect == 0)
+            {
+                game.AddCombo(1f);
+            }
+            if (sinceLastCollect == 1)
+            {
+                game.AddCombo(0.5f);
+            }
+            if (sinceLastCollect == 2)
+            {
+                game.AddCombo(0.25f);
+            }
+            if (sinceLastCollect == 3)
+            {
+                game.AddCombo(0);
+            }
+            sinceLastCollect = 0;
+            game.Blobs++;
             GameManager.Instance.AddScore(100, "Blob");
             collision.transform.gameObject.GetComponent<Blob>().Collect();
             if (reflectionPercentage < 0.9f)
@@ -279,6 +343,57 @@ public class Player : MonoBehaviour
         }
         transform.position = new Vector3(game.bigDaddy.transform.position.x - 6, i.y, game.bigDaddy.transform.position.z);
         yield return null;
+    }
+    public void FishMode(bool Exit)
+    {
+        if (Exit)
+        {
+            StartCoroutine(ExitFishMode());
+        }
+        else
+        {
+            StartCoroutine(EnterFishMode());
+        }
+    }
+    private IEnumerator ExitFishMode()
+    {
+        Vector3 ipo = transform.position;
+        Vector3 isc = transform.localScale;
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0;
+        float t = 0;
+        while (t < 1)
+        {
+            transform.localScale = Vector3.Lerp(isc, new Vector3(1, 1, 1), t);
+            t += Time.fixedUnscaledDeltaTime;
+            yield return null;
+        }
+        transform.localScale = new Vector3(1, 1, 1);
+        GetComponent<BoxCollider2D>().size = new Vector2(0.2f, 0.2f);
+        yield return null;
+    }
+    private IEnumerator EnterFishMode()
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0;
+        transform.rotation = Quaternion.identity;
+        Vector3 ipo = transform.position;
+        Vector3 isc = transform.localScale;
+        float t = 0;
+        MouseHeld = false;
+        while (t < 1)
+        {
+            transform.position = Vector3.Lerp(ipo, new Vector3(game.bigDaddy.transform.position.x, ipo.y, game.bigDaddy.transform.position.z), t);
+            transform.localScale = Vector3.Lerp(isc, new Vector3(3, 8, 1), t);
+            t += Time.fixedUnscaledDeltaTime;
+            yield return null;
+        }
+        MouseHeld = false;
+        transform.position = new Vector3(game.bigDaddy.transform.position.x, ipo.y, game.bigDaddy.transform.position.z);
+        transform.localScale = new Vector3(3, 8, 1);
+        GetComponent<BoxCollider2D>().size = Vector2.one;
+        yield return null;
+        MouseHeld = false;
     }
     private void Pause()
     {
