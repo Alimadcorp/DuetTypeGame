@@ -21368,7 +21368,7 @@ MonoBehaviour:
   direction: 0
   initialStop: 1
   coolDown: 1
-  fishForce: 600
+  fishForce: 500
   fishHeight: 6
   fishTimer: 1
   initialG: 0
