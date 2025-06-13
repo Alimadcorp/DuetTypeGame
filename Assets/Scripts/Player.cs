@@ -1,10 +1,10 @@
+using Dan.Main;
 using System;
 using System.Collections;
-using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -20,10 +20,14 @@ public class Player : MonoBehaviour
     public TextMeshPro ScoreText;
     public TextMeshPro HighScoreText;
     public TextMeshPro ScoreTextMain;
+    public TextMeshProUGUI count;
+    public TextMeshProUGUI pausedText;
     public TrailRenderer trail;
     public AudioClip jump;
     public LeaderboardManager ldMan;
     public GameObject credObj;
+    public GameObject panel;
+    public Button startButton;
     [Header("Tweakables")]
     public int sinceLastCollect = 100;
     public float jumpForce = 1.0f;
@@ -42,6 +46,7 @@ public class Player : MonoBehaviour
     public float reflectionPercentage = 0;
     public bool ContinueMode = false;
     public bool lost = false;
+    public bool GameIsPaused = false;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -61,6 +66,7 @@ public class Player : MonoBehaviour
     }
     private void Start()
     {
+        startButton.Select();
         game = GameManager.Instance;
         game.over = false;
     }
@@ -122,8 +128,8 @@ public class Player : MonoBehaviour
     }
     private void Click()
     {
-        if (Time.timeSinceLevelLoad < 1) return;
         if (ContinueMode) { OnContinue(); ContinueMode = false; }
+        if (Time.timeSinceLevelLoad < 1 || Time.timeScale < 0.001f) return;
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
 		if(lost) return;
@@ -147,7 +153,6 @@ public class Player : MonoBehaviour
         {
             rb.gravityScale = initialG * Mathf.Sqrt(game.Speed) * game.SpeedMiniFishFactor;
         }
-        // AudioSource.PlayClipAtPoint(jump, transform.position);
         switch (game.gameMode)
         {
             case GameManager.GameMode.Flappy:
@@ -207,23 +212,31 @@ public class Player : MonoBehaviour
         system.startColor = GetComponent<SpriteRenderer>().color;
         string history = PlayerPrefs.GetString("history", DateTime.UtcNow.ToString().Replace(" ", "T"));
         history += $":{GameManager.Score.ToString()}.{(int)(Time.timeSinceLevelLoad*100)}";
-        if (Application.platform == RuntimePlatform.WindowsEditor) Debug.Log(history);
-        PlayerPrefs.SetString("history", history);
-        PlayerPrefs.SetInt("Blobs", game.Blobs);
-        PlayerPrefs.Save();
-        Logger.Log("GameOver: " + PlayerPrefs.GetString("myUsername") + ", " + GameManager.Score.ToString() + " History: " + history);
-        system.gameObject.SetActive(true);
-        system.gameObject.transform.position = collision.contacts[0].point;
-        system.Play();
         int LastHighScore = PlayerPrefs.GetInt("highScore");
         int HighScore = PlayerPrefs.GetInt("highScore");
         if (GameManager.Score > HighScore)
         {
             HighScore = GameManager.Score;
             PlayerPrefs.SetInt("highScore", HighScore);
-            PlayerPrefs.Save();
             submitt = true;
         }
+        PlayerPrefs.SetString("history", history);
+        PlayerPrefs.SetInt("Blobs", game.Blobs);
+        PlayerPrefs.SetInt("NetBlobs", game.NetBlobs);
+        PlayerPrefs.Save();
+        Logger.Log("GameOver: " + PlayerPrefs.GetString("myUsername") + ", " + GameManager.Score.ToString() + " Blobs: " + game.Blobs);
+        string usnm = PlayerPrefs.GetString("myUsername");
+        if (usnm != null && usnm != "")
+        {
+            Leaderboards.Main.UploadNewEntry(usnm, PlayerPrefs.GetInt("highScore"), PlayerPrefs.GetInt("NetBlobs").ToString() + ":::::" + PlayerPrefs.GetString("history"));
+        }
+        system.gameObject.SetActive(true);
+        system.gameObject.transform.position = collision.contacts[0].point;
+        if(collision.contacts.Length == 2)
+        {
+            system.gameObject.transform.position = Vector3.Lerp(collision.contacts[0].point, collision.contacts[1].point, 0.5f);
+        }
+        system.Play();
         if (Application.platform != RuntimePlatform.WebGLPlayer)
         {
             while (Time.timeScale > 0)
@@ -296,21 +309,22 @@ public class Player : MonoBehaviour
             if (sinceLastCollect == 0)
             {
                 game.AddCombo(1f);
-            }
-            if (sinceLastCollect == 1)
+            } else if (sinceLastCollect == 1)
             {
                 game.AddCombo(0.5f);
-            }
-            if (sinceLastCollect == 2)
+            } else if (sinceLastCollect == 2)
+            {
+                game.AddCombo(0.25f);
+            } else if (sinceLastCollect == game.comboBreaker)
+            {
+                game.AddCombo(0);
+            } else
             {
                 game.AddCombo(0.25f);
             }
-            if (sinceLastCollect == 3)
-            {
-                game.AddCombo(0);
-            }
             sinceLastCollect = 0;
-            game.Blobs++;
+            game.Blobs += (int)game.comboMultiplier * game.blobWorth;
+            game.NetBlobs += (int)game.comboMultiplier * game.blobWorth;
             GameManager.Instance.AddScore(100, "Blob");
             collision.transform.gameObject.GetComponent<Blob>().Collect();
             if (reflectionPercentage < 0.9f)
@@ -397,7 +411,51 @@ public class Player : MonoBehaviour
     }
     private void Pause()
     {
-        Time.timeScale = Time.timeScale == 1 ? 0 : 1;
+        if (!GameIsPaused)
+        {
+            if (!initialStop && !ContinueMode)
+            {
+                Time.timeScale = 0;
+                pausedText.gameObject.SetActive(true);
+                panel.SetActive(true);
+                GameIsPaused = true;
+                count.text = "";
+                StopCoroutine(Unpause());
+            }
+        }
+        else
+        {
+            StartCoroutine(Unpause());
+        }
+    }
+    private void OnApplicationFocus(bool focus)
+    {
+        if (!focus && !GameIsPaused) { Pause(); }
+    }
+    private IEnumerator Unpause()
+    {
+        if (ContinueMode)
+        {
+            pausedText.gameObject.SetActive(false);
+            GameIsPaused = false;
+            panel.SetActive(false);
+            yield break;
+        }
+        pausedText.gameObject.SetActive(false);
+        GameIsPaused = false;
+        panel.SetActive(false);
+        count.text = "3";
+        yield return new WaitForSecondsRealtime(1f);
+        count.text = "2";
+        yield return new WaitForSecondsRealtime(1f);
+        count.text = "1";
+        yield return new WaitForSecondsRealtime(1f);
+        count.text = "";
+        float target = GameManager.Instance.speedMultiplier > 0 ? 0.6f : 1f;
+        while (Time.timeScale < target) {
+            Time.timeScale += Time.unscaledDeltaTime * 1f;
+            yield return null;
+        }
     }
     private void OnEnable()
     {

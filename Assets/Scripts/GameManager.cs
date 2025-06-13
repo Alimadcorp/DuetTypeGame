@@ -15,9 +15,11 @@ public class GameManager : MonoBehaviour
     public static int Score = 0;
     public float Speed = 0.25f;
     public float TargetSpeed = 0.25f;
+    public float powerupDuration = 1f;
     public int switchThreshold = 1000;
     public float rateOfIncrease;
     public int Blobs = 0;
+    public int NetBlobs = 0;
 
     [Header("Parameters")]
     public float wallSpeed, opening, speedFactor = 1.0f, multiplier = 1.0f, multiplierUpSpeed = 1f;
@@ -51,6 +53,8 @@ public class GameManager : MonoBehaviour
     private int scoreSinceChange = 0;
     public int powerMultiplier = 1;
     public int speedMultiplier = 1;
+    public int blobWorth = 1;
+    public int comboBreaker = 3;
     public float xs, ys;
     public bool over = false;
     public float alpha = 1;
@@ -64,6 +68,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Blobs = PlayerPrefs.GetInt("Blobs");
+        NetBlobs = PlayerPrefs.GetInt("NetBlobs");
         if (Instance != null && Instance != this)
         {
 
@@ -79,7 +84,7 @@ public class GameManager : MonoBehaviour
     {
         SetGamemode(gameMode);
         blobText.text = Blobs.ToString();
-        if (Global.newSession) Logger.LogImp("Session start: " + PlayerPrefs.GetString("myUsername"));
+        Logger.LogImp("Session start (" + Application.platform.ToString() + "): " + PlayerPrefs.GetString("myUsername"));
         SetTrail(PlayerPrefs.GetString("myTrail", "default"));
     }
     public void SetTrail(string id)
@@ -93,22 +98,22 @@ public class GameManager : MonoBehaviour
     {
         if (name == "2x")
         {
-            Powerups.instance.AddPowerup(name, 10f);
+            Powerups.instance.AddPowerup(name, 10f * powerupDuration);
             powerMultiplier *= 2;
         }
         else if (name == "4x")
         {
-            Powerups.instance.AddPowerup(name, 8f);
+            Powerups.instance.AddPowerup(name, 8f * powerupDuration);
             powerMultiplier *= 4;
         }
         else if (name == "slow")
         {
-            Powerups.instance.AddPowerup("Slow Mo", 5f);
+            Powerups.instance.AddPowerup("Slow Mo", 5f * powerupDuration);
             speedMultiplier++;
         }
         else if (name == "luck")
         {
-            Powerups.instance.AddPowerup("Luck", 5f);
+            Powerups.instance.AddPowerup("Luck", 5f * powerupDuration);
             isLucky++;
         }
         AddScore(50, "Collected Powerup");
@@ -187,6 +192,7 @@ public class GameManager : MonoBehaviour
         time += Time.fixedDeltaTime;
         sinceGameModeChange += Time.fixedDeltaTime;
         comboText.text = $"x{comboMultiplier} Combo";
+        blobText.text = Blobs.ToString();
         comboText.GetComponent<ComboText>().SetColor(comboColors[(int)comboMultiplier - 1], true);
 
         if (time > 10f / multiplier)
@@ -211,7 +217,7 @@ public class GameManager : MonoBehaviour
         if ((gameMode == GameMode.AntiClockwise || gameMode == GameMode.Clockwise) && blobAmt < boxesPerSpawn)
         {
             Blob newBlob = Instantiate(blob, RandomTransform(), Quaternion.identity, bigDaddy.transform).GetComponent<Blob>();
-            int r = (isLucky > 0) ? 1 : Random.Range(0, 15);
+            int r = (isLucky > 0) ? Random.Range(1,3) : Random.Range(0, 15);
             if (r == 1)
             {
                 int random = (int)Random.Range(0, 4);
@@ -243,7 +249,7 @@ public class GameManager : MonoBehaviour
         {
             blobAmt = 0;
         }
-        if(gameMode == GameMode.Fish)
+        if (gameMode == GameMode.Fish)
         {
             Player.Instance.FishMode(true);
             RodNFish.instance.Spawn(true);
@@ -251,7 +257,6 @@ public class GameManager : MonoBehaviour
         gameMode = _gameMode;
         sinceGameModeChange = 0f;
 
-        Blob[] blobs = bigDaddy.GetComponentsInChildren<Blob>();
         TextMeshPro tmp;
         switch (gameMode)
         {
@@ -265,10 +270,8 @@ public class GameManager : MonoBehaviour
                 hintVisible = true;
                 Player.Instance.reflectionPercentage = 0f;
                 hintText.text = "Tap to switch direction";
-                foreach (var blob in blobs)
-                {
-                    if (blob != null) blob.Collect();
-                }
+                EndBlobs();
+                Invoke("EndBlobs", 1f);
                 break;
             case GameMode.AntiClockwise:
                 BigDaddy.moveDirection = Vector3.zero;
@@ -279,10 +282,8 @@ public class GameManager : MonoBehaviour
                 hintVisible = true;
                 Player.Instance.reflectionPercentage = 0f;
                 hintText.text = "Tap to switch directions";
-                foreach (var blob in blobs)
-                {
-                    if (blob != null) blob.Collect();
-                }
+                EndBlobs();
+                Invoke("EndBlobs", 1f);
                 break;
             case GameMode.Flappy:
                 BigDaddy.moveDirection = Vector3.right * 13;
@@ -294,10 +295,8 @@ public class GameManager : MonoBehaviour
                 modeText.text = "Flappy Mode";
                 hintText.text = "Tap to jump";
                 hintVisible = true;
-                foreach (var blob in blobs)
-                {
-                    if (blob != null) blob.Collect();
-                }
+                EndBlobs();
+                Invoke("EndBlobs", 1f);
                 break;
             case GameMode.Fish:
                 BigDaddy.moveDirection = Vector3.right * 30;
@@ -310,11 +309,18 @@ public class GameManager : MonoBehaviour
                 modeText.text = "Fish Mode";
                 hintText.text = "Hold to pull";
                 hintVisible = true;
-                foreach (var blob in blobs)
-                {
-                    if (blob != null) blob.Collect();
-                }
+                EndBlobs();
+                Invoke("EndBlobs", 1f);
                 break;
+        }
+    }
+    private void EndBlobs()
+    {
+
+        Blob[] blobs = bigDaddy.GetComponentsInChildren<Blob>();
+        foreach (var blob in blobs)
+        {
+            if (blob != null) blob.Collect();
         }
     }
 
@@ -376,7 +382,7 @@ public class GameManager : MonoBehaviour
     }
     public void AddCombo(float strength)
     {
-        if(strength < 0.1f) { comboMultiplier = 1; return; }
+        if (strength < 0.1f) { comboMultiplier = 1; return; }
         comboMultiplier += strength;
         GameObject newComboText = Instantiate(comboAdd, comboSpawner.transform.position, Quaternion.identity, bigDaddy.transform);
         newComboText.GetComponent<TextMeshPro>().text = $"x{comboMultiplier} Combo";

@@ -11,6 +11,7 @@ namespace Dan.Models
         public ulong Date;
         public string Extra;
         public int Rank;
+        public int Blobs;
         [SerializeField] internal string UserGuid;
         [field: System.NonSerialized] internal string NewUsername { get; set; }
         

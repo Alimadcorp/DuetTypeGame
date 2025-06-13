@@ -4,19 +4,25 @@ using TMPro;
 using Dan.Models;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
+using System.Linq;
 public class LeaderboardManager : MonoBehaviour
 {
     public TextMeshProUGUI loading;
     public TextMeshProUGUI error;
     public LeaderEntry[] ldarray;
-    public GameObject parent;
-
+    public LeaderEntry[] ldarray2;
+    public GameObject parent, parent2;
     public TMP_InputField username;
     public Button ubutton;
     public GameObject UIParent, bg;
     private int scorer = 0;
     private bool submiting = false;
     public Button relButton;
+    public Button mainButton;
+    public Button secButton;
+    public TextMeshProUGUI mainText;
+    public TextMeshProUGUI secText;
     public void OpenLeaderboard(bool hi)
     {
         if (!hi)
@@ -36,10 +42,21 @@ public class LeaderboardManager : MonoBehaviour
     }
     private void OnLoaded(Entry[] entries)
     {
-        relButton.interactable = true;
-        parent.SetActive(true);
-        bool foundMine = false, foundMineInTop10 = false; int myEntryI = 0;
         loading.gameObject.SetActive(false);
+        parent.SetActive(true);
+        relButton.interactable = true;
+
+        for(int i = 0; i < entries.Length; i++)
+        {
+            entries[i].Blobs = Int32.Parse(entries[i].Extra.Split(":::::")[0]);
+        }
+        Entry[] sortedByBlobs = entries.OrderByDescending(e => e.Blobs).ToArray();
+        for(int i = 0; i < sortedByBlobs.Length; i++)
+        {
+            sortedByBlobs[i].Rank = i + 1;
+        }
+        bool foundMine = false, foundMineInTop10 = false; int myEntryI = 0;
+        bool foundMineBlob = false, foundMineInTop10Blob = false; int myEntryIBlob = 0;
         for (int i = 0; i < entries.Length; i++)
         {
             if (entries[i].IsMine())
@@ -55,9 +72,24 @@ public class LeaderboardManager : MonoBehaviour
                 }
             }
         }
+        for (int i = 0; i < sortedByBlobs.Length; i++)
+        {
+            if (sortedByBlobs[i].IsMine())
+            {
+                foundMineBlob = true;
+                myEntryIBlob = i;
+                if (sortedByBlobs[i].Blobs != PlayerPrefs.GetInt("NetBlobs"))
+                {
+                    if (!submiting)
+                    {
+                        SubmitEntry(PlayerPrefs.GetInt("highScore"));
+                    }
+                }
+            }
+        }
         if (foundMine)
         {
-            if (PlayerPrefs.GetInt("highScore") < entries[myEntryI].Score)
+            if (PlayerPrefs.GetInt("highScore") < entries[myEntryI].Score || PlayerPrefs.GetInt("NetBlobs") < sortedByBlobs[myEntryIBlob].Blobs)
             {
                 PlayerPrefs.SetInt("highScore", entries[myEntryI].Score);
                 PlayerPrefs.SetString("myUsername", entries[myEntryI].Username);
@@ -72,10 +104,23 @@ public class LeaderboardManager : MonoBehaviour
                 foundMineInTop10 = true;
             }
         }
+        for (int i = 0; i < (sortedByBlobs.Length <= 11 ? sortedByBlobs.Length : 11); i++)
+        {
+            ldarray2[i].SetEntry(sortedByBlobs[i].Username, i + 1, sortedByBlobs[i].Blobs, sortedByBlobs[i].IsMine());
+            if (sortedByBlobs[i].IsMine())
+            {
+                foundMineInTop10Blob = true;
+            }
+        }
         int myEntryIndex = 10;
+        int myEntryIndexBlob = 10;
         if (!foundMineInTop10 && foundMine)
         {
             ldarray[myEntryIndex].SetEntry(entries[myEntryI].Username, entries[myEntryI].Rank, entries[myEntryI].Score, true);
+        }
+        if (!foundMineInTop10Blob && foundMineBlob)
+        {
+            ldarray2[myEntryIndexBlob].SetEntry(sortedByBlobs[myEntryIBlob].Username, sortedByBlobs[myEntryIBlob].Rank, sortedByBlobs[myEntryIBlob].Blobs, true);
         }
         if (!foundMine)
         {
@@ -149,7 +194,7 @@ public class LeaderboardManager : MonoBehaviour
             if (usnm.ToLower() == "delete entry") { DeleteEntry(); return; }
             if (usnm.ToLower() == "dont upload") return;
             Logger.Log("Submit Entry: " + usnm + ", " + score);
-            Leaderboards.Main.UploadNewEntry(usnm, score, PlayerPrefs.GetString("history"), Grs);
+            Leaderboards.Main.UploadNewEntry(usnm, score, PlayerPrefs.GetInt("NetBlobs").ToString() + ":::::" + PlayerPrefs.GetString("history"), Grs);
         }
     }
     private void SES()
@@ -177,11 +222,33 @@ public class LeaderboardManager : MonoBehaviour
     public void DeleteEntry()
     {
         Logger.Log("Delete Entry: " + PlayerPrefs.GetString("myUsername") + ", " + PlayerPrefs.GetString("highScore"));
+        PlayerPrefs.SetString("myUsername", "");
         Leaderboards.Main.DeleteEntry(OnDelete);
     }
     private void OnDelete(bool yes)
     {
         OpenLeaderboard(true);
         SceneManager.LoadSceneAsync(0); return;
+    }
+    public void OpenLB(bool sec)
+    {
+        if (sec)
+        {
+            secButton.interactable = false;
+            secText.color = Color.black;
+            mainText.color = Color.white;
+            mainButton.interactable = true;
+            parent.SetActive(false);
+            parent2.SetActive(true);
+        }
+        else
+        {
+            secButton.interactable = true;
+            secText.color = Color.white;
+            mainText.color = Color.black;
+            mainButton.interactable = false;
+            parent.SetActive(true);
+            parent2.SetActive(false);
+        }
     }
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 public class RodNFish : MonoBehaviour
 {
     public static float fishY;
+    public float fishVelY;
+    public float timer = 2f;
     public GameObject fish;
     public float growSpeed = 0.1f;
     public float fishGrowSpeed = 1f;
@@ -14,14 +16,9 @@ public class RodNFish : MonoBehaviour
     public float growLimit = 2.5f;
     public bool spawned = false;
     public static RodNFish instance;
-
-    private Vector3 initialScale;
-    private Vector3 startPos;
-
     private void Awake()
     {
         instance = this;
-        initialScale = fish.transform.localScale;
     }
 
     public void Spawn(bool Exit)
@@ -33,24 +30,25 @@ public class RodNFish : MonoBehaviour
     {
         if (!Player.Instance.initialStop && spawned)
         {
-            float noise = Mathf.PerlinNoise1D(Time.timeSinceLevelLoad * fishSpd * moveSpeed);
-            Vector3 move = Vector3.up * noise * Time.deltaTime;
-            fish.transform.position += move;
-
-            float clampedY = Mathf.Clamp(fish.transform.position.y, -fishSrpd, fishSrpd);
-            fish.transform.position = new Vector3(fish.transform.position.x, clampedY, fish.transform.position.z);
-
-            fishY = fish.transform.position.y;
+            timer -= Time.deltaTime;
+            fish.transform.localPosition += new Vector3(0, fishVelY * Time.deltaTime * fishSpd, 0);
+            fish.transform.localPosition = new Vector3(fish.transform.localPosition.x, Mathf.Clamp(fish.transform.localPosition.y, -fishSrpd, fishSrpd), fish.transform.localPosition.z);
+            if (timer < 0)
+            {
+                timer = Random.Range(3f, 10f);
+                fishVelY = Random.Range(-1f, 1f);
+            }
+            fishY = fish.transform.localPosition.y;
         }
     }
     private IEnumerator spawn()
     {
-        while(transform.localScale.y < growLimit)
+        while (transform.localScale.y < growLimit)
         {
             transform.localScale += new Vector3(0, Time.deltaTime * growSpeed, 0);
-            yield return null; 
+            yield return null;
         }
-        while(fish.transform.localScale.x < fishSize)
+        while (fish.transform.localScale.x < fishSize)
         {
             fish.transform.localScale += new Vector3(1, 1, 0) * Time.deltaTime * fishGrowSpeed;
             yield return null;
