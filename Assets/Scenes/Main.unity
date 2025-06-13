@@ -6936,7 +6936,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 218.95, y: 71.02002}
+  m_AnchoredPosition: {x: 218.95001, y: 71.02002}
   m_SizeDelta: {x: 101.28, y: 101.28}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &307121763
@@ -11762,8 +11762,8 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
-  m_Antialiasing: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
   m_AntialiasingQuality: 1
   m_StopNaN: 0
   m_Dithering: 0
@@ -17359,7 +17359,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 70.51999, y: 71.02002}
+  m_AnchoredPosition: {x: 70.52002, y: 71.02002}
   m_SizeDelta: {x: 101.28, y: 101.28}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &807649781

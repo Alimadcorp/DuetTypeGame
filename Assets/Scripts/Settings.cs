@@ -49,7 +49,8 @@ public class Settings : MonoBehaviour
     private void SaveUpdates()
     {
         string toSave = "";
-        for (int i = 0; i < updateLevels.Length; i++) {
+        for (int i = 0; i < updateLevels.Length; i++)
+        {
             toSave += updateLevels[i].ToString() + ",";
         }
         PlayerPrefs.SetString("Upgrades", toSave);
@@ -58,7 +59,8 @@ public class Settings : MonoBehaviour
     private void Upgrade(int id, int level)
     {
         GameManager game = GameManager.Instance;
-        switch (id) {
+        switch (id)
+        {
             case 0:
                 game.multiplier = 1f + upgradeIncerement[id] * level;
                 break;
@@ -88,7 +90,7 @@ public class Settings : MonoBehaviour
                 returnValue = 1 + upgradeIncerement[id] * level;
                 break;
             case 3:
-                returnValue = 3 * (int)upgradeIncerement[id] * level;
+                returnValue = 4 + (int)upgradeIncerement[id] * level;
                 break;
         }
         return returnValue;
@@ -98,16 +100,17 @@ public class Settings : MonoBehaviour
         string saved = PlayerPrefs.GetString("Upgrades");
         if (saved == "") return;
         string[] loaded = saved.Split(",");
-        for (int i = 0; i < updateLevels.Length; i++) {
+        for (int i = 0; i < updateLevels.Length; i++)
+        {
             updateLevels[i] = Int32.Parse(loaded[i]);
-            shownUpgradePrices[i] = initialUpgradePrices[i] + (int)((float)updateLevels[i] * upgradeIncerement[i]);
+            shownUpgradePrices[i] = initialUpgradePrices[i] + (int)(updateLevels[i] * priceIncrement[i]);
             Upgrade(i, updateLevels[i]);
         }
     }
 
     void Start()
     {
-        shownUpgradePrices = initialUpgradePrices;
+        shownUpgradePrices = initialUpgradePrices.ToArray();
         if (PlayerPrefs.GetInt("review") == 1)
         {
             reviewShopTxt.text = "Leave a review";
