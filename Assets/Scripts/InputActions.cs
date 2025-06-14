@@ -117,6 +117,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Screenshot"",
+                    ""type"": ""Button"",
+                    ""id"": ""ea2c3c9a-97cb-44f9-af55-60e48d841aaa"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -229,6 +238,28 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Exit"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b93dc16c-001b-4e4a-9cc7-f99496c89ff2"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Screenshot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d56844fe-3a9c-46a0-9915-01f24c60fd1e"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Screenshot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -240,6 +271,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Normal_Pause = m_Normal.FindAction("Pause", throwIfNotFound: true);
         m_Normal_Click = m_Normal.FindAction("Click", throwIfNotFound: true);
         m_Normal_Exit = m_Normal.FindAction("Exit", throwIfNotFound: true);
+        m_Normal_Screenshot = m_Normal.FindAction("Screenshot", throwIfNotFound: true);
     }
 
     ~@InputActions()
@@ -323,6 +355,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Normal_Pause;
     private readonly InputAction m_Normal_Click;
     private readonly InputAction m_Normal_Exit;
+    private readonly InputAction m_Normal_Screenshot;
     /// <summary>
     /// Provides access to input actions defined in input action map "Normal".
     /// </summary>
@@ -346,6 +379,10 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Normal/Exit".
         /// </summary>
         public InputAction @Exit => m_Wrapper.m_Normal_Exit;
+        /// <summary>
+        /// Provides access to the underlying input action "Normal/Screenshot".
+        /// </summary>
+        public InputAction @Screenshot => m_Wrapper.m_Normal_Screenshot;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -381,6 +418,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Exit.started += instance.OnExit;
             @Exit.performed += instance.OnExit;
             @Exit.canceled += instance.OnExit;
+            @Screenshot.started += instance.OnScreenshot;
+            @Screenshot.performed += instance.OnScreenshot;
+            @Screenshot.canceled += instance.OnScreenshot;
         }
 
         /// <summary>
@@ -401,6 +441,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Exit.started -= instance.OnExit;
             @Exit.performed -= instance.OnExit;
             @Exit.canceled -= instance.OnExit;
+            @Screenshot.started -= instance.OnScreenshot;
+            @Screenshot.performed -= instance.OnScreenshot;
+            @Screenshot.canceled -= instance.OnScreenshot;
         }
 
         /// <summary>
@@ -462,5 +505,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnExit(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Screenshot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnScreenshot(InputAction.CallbackContext context);
     }
 }

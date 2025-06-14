@@ -1,6 +1,7 @@
 using Dan.Main;
 using System;
 using System.Collections;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -57,7 +58,17 @@ public class Player : MonoBehaviour
         normalActions.Click.started += ctx => Click();
         normalActions.Click.canceled += ctx => UnClick();
         normalActions.Pause.performed += ctx => Pause();
+        if(Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            normalActions.Screenshot.performed += ctx => Screenshot();
+        }
         Instance = this;
+    }
+    private void Screenshot() { StartCoroutine(screenshot()); }
+    private IEnumerator screenshot() {
+        yield return new WaitForEndOfFrame();
+        ScreenCapture.CaptureScreenshot(Path.Join(Application.persistentDataPath, UnityEngine.Random.Range(10000, 99999).ToString() + ".png"));
+        Debug.Log(Path.Join(Application.persistentDataPath, UnityEngine.Random.Range(10000, 99999).ToString() + ".png"));
     }
     public void BeginGame()
     {
