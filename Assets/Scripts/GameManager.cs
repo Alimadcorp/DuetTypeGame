@@ -329,6 +329,10 @@ public class GameManager : MonoBehaviour
         sinceGameModeChange = 0f;
         scoreSinceChange = 0;
         boxesPerSpawn++;
+        if (comboMultiplier > 1)
+        {
+            Player.Instance.sinceLastCollect = 0;
+        }
         int current = (int)gameMode;
         int next = 3;
         do { next = Random.Range(0, 4); }

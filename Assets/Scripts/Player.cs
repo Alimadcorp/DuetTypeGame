@@ -133,8 +133,11 @@ public class Player : MonoBehaviour
         if (!ClickEnabled) return;
         if (coolDown > 0) return;
 		if(lost) return;
-        sinceLastCollect++;
-        if(sinceLastCollect > 2)
+        if (game.gameMode == GameManager.GameMode.Clockwise || game.gameMode == GameManager.GameMode.AntiClockwise)
+        {
+            sinceLastCollect++;
+        }
+        if(sinceLastCollect >= GameManager.Instance.comboBreaker)
         {
             game.AddCombo(0);
         }

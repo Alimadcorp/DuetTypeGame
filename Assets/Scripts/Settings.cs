@@ -45,7 +45,31 @@ public class Settings : MonoBehaviour
     public float[] priceIncrement;
     public int[] maxUpdates;
     public int[] updateLevels;
-
+    void Start()
+    {
+        shownUpgradePrices = initialUpgradePrices.ToArray();
+        consntToSharingI.isOn = PlayerPrefs.GetInt("Consent") == 1;
+        if (PlayerPrefs.GetInt("Consent", -1) == -1)
+        {
+            consent.SetActive(true);
+            panel.SetActive(true);
+        }
+        if (Global.graphEnabled)
+        {
+            Tayx.Graphy.GraphyManager.Instance.Enable();
+        }
+        else
+        {
+            Tayx.Graphy.GraphyManager.Instance.Disable();
+        }
+        credits.text = credits.text.Replace("{Version}", Application.version).Replace("{Username}", PlayerPrefs.GetString("myUsername")).Replace("{Score}", PlayerPrefs.GetInt("highScore").ToString()).Replace("{UnityVersion}", Application.unityVersion).Replace("{Name}", Application.productName).Replace("{Company}", Application.companyName).Replace("{SaveFolder}", Application.dataPath).Replace("{FrameRate}", Application.targetFrameRate.ToString()).Replace("{Language}", Application.systemLanguage.ToString()).Replace("{Genuine}", Application.genuine ? "Genuine Build" : "Insecure or Altered Build").Replace("{GUID}", Application.buildGUID).Replace("{Platform}", Application.platform.ToString()).Replace("{NetBlobs}", PlayerPrefs.GetInt("NetBlobs").ToString());
+        Adjust();
+        LoadUpdates();
+    }
+    private void Update()
+    {
+        fpsText.text = "Frame Rate: " + (int)(1f / Time.deltaTime);
+    }
     private void SaveUpdates()
     {
         string toSave = "";
@@ -71,7 +95,7 @@ public class Settings : MonoBehaviour
                 game.blobWorth = 1 + (int)upgradeIncerement[id] * level;
                 break;
             case 3:
-                game.comboBreaker = 3 * (int)upgradeIncerement[id] * level;
+                game.comboBreaker = 3 + (int)upgradeIncerement[id] * level;
                 break;
         }
     }
@@ -90,7 +114,7 @@ public class Settings : MonoBehaviour
                 returnValue = 1 + upgradeIncerement[id] * level;
                 break;
             case 3:
-                returnValue = 4 + (int)upgradeIncerement[id] * level;
+                returnValue = 3 + (int)upgradeIncerement[id] * level;
                 break;
         }
         return returnValue;
@@ -106,36 +130,6 @@ public class Settings : MonoBehaviour
             shownUpgradePrices[i] = initialUpgradePrices[i] + (int)(updateLevels[i] * priceIncrement[i]);
             Upgrade(i, updateLevels[i]);
         }
-    }
-
-    void Start()
-    {
-        shownUpgradePrices = initialUpgradePrices.ToArray();
-        if (PlayerPrefs.GetInt("review") == 1)
-        {
-            reviewShopTxt.text = "Leave a review";
-        }
-        consntToSharingI.isOn = PlayerPrefs.GetInt("Consent") == 1;
-        if (PlayerPrefs.GetInt("Consent", -1) == -1)
-        {
-            consent.SetActive(true);
-            panel.SetActive(true);
-        }
-        if (Global.graphEnabled)
-        {
-            Tayx.Graphy.GraphyManager.Instance.Enable();
-        }
-        else
-        {
-            Tayx.Graphy.GraphyManager.Instance.Disable();
-        }
-        credits.text = credits.text.Replace("{Version}", Application.version).Replace("{Username}", PlayerPrefs.GetString("myUsername")).Replace("{Score}", PlayerPrefs.GetInt("highScore").ToString()).Replace("{UnityVersion}", Application.unityVersion).Replace("{Name}", Application.productName).Replace("{Company}", Application.companyName).Replace("{SaveFolder}", Application.dataPath).Replace("{FrameRate}", Application.targetFrameRate.ToString()).Replace("{Language}", Application.systemLanguage.ToString()).Replace("{Genuine}", Application.genuine ? "Genuine Build" : "Insecure or Altered Build").Replace("{GUID}", Application.buildGUID).Replace("{Platform}", Application.platform.ToString()).Replace("{NetBlobs}", PlayerPrefs.GetInt("NetBlobs").ToString());
-        Adjust();
-        LoadUpdates();
-    }
-    private void Update()
-    {
-        fpsText.text = "Frame Rate: " + (int)(1f / Time.deltaTime);
     }
     public void SaveStates()
     {
@@ -264,7 +258,10 @@ public class Settings : MonoBehaviour
     {
         LoadStates();
         LoadUpdates();
-
+        if (PlayerPrefs.GetInt("review") == 1)
+        {
+            reviewShopTxt.text = "Leave a review";
+        }
         GameManager.Instance.blobText.text = GameManager.Instance.Blobs.ToString();
         currentAmt.text = $"{GameManager.Instance.Blobs}";
 
@@ -307,8 +304,9 @@ public class Settings : MonoBehaviour
         if (shownUpgradePrices[id] <= GameManager.Instance.Blobs)
         {
             GameManager.Instance.Blobs -= shownUpgradePrices[id];
-            shownUpgradePrices[id] += (int)priceIncrement[id];
             updateLevels[id]++;
+            Logger.Log($"{PlayerPrefs.GetString("myUsername")} (Purchased Upgrade): {id} to level {updateLevels[id]} for price {shownUpgradePrices[id]}");
+            shownUpgradePrices[id] += (int)priceIncrement[id];
             Upgrade(id, updateLevels[id]);
         }
         PlayerPrefs.SetInt("Blobs", GameManager.Instance.Blobs);
@@ -332,6 +330,7 @@ public class Settings : MonoBehaviour
                     }
                 }
                 states[itemId] = ItemState.Equipped;
+                Logger.Log($"{PlayerPrefs.GetString("myUsername")} (Purchased Item): {itemId}");
                 PlayerPrefs.SetInt("Blobs", GameManager.Instance.Blobs);
                 PlayerPrefs.Save();
                 GameManager.Instance.SetTrail(itemId);

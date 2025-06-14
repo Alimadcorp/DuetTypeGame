@@ -33937,15 +33937,15 @@ MonoBehaviour:
   initialUpgradePrices: 1900000032000000c8000000c8000000
   upgradeIncerement:
   - 0.25
-  - 0.25
+  - 0.1
   - 1
   - 1
   priceIncrement:
   - 50
-  - 50
+  - 25
   - 100
   - 800
-  maxUpdates: 0a0000000a0000000400000002000000
+  maxUpdates: 0a000000130000000400000002000000
   updateLevels: 00000000000000000000000000000000
 --- !u!1 &1825376266
 GameObject:
